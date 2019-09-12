@@ -1,0 +1,89 @@
+*fzy.txt*  Run fzy asynchronously in a Vim terminal window.
+
+Author:     bfrg <https://github.com/bfrg>
+Website:    https://github.com/bfrg/vim-fzy
+License:    Same terms as Vim itself (see |license|)
+
+
+==============================================================================
+INTRODUCTION                                                   *vim-fzy* *fzy*
+
+vim-fzy provides a simple API for running https://github.com/jhawthorn/fzy
+asynchronously in a |terminal-window| and invoking a callback function with
+the selected item.
+
+==============================================================================
+API                                                                  *fzy-api*
+
+fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
+            Open a |terminal-window| and run fzy in it.
+
+            {items} can be a |string| or a |list| of strings. When a string is
+            passed, the string will be run as a command in 'shell' and its
+            output piped to fzy. If items is a list, the items are piped to
+            fzy using the shell's printf command.
+
+            {callback} is |Funcref| that is invoked after an item has been
+            selected. The function is called after the terminal window is
+            closed. The callback function is called with one argument, the
+            selected item. See |fzy-examples| below.
+
+            {options} is an optional |Dictionary| that can contain the
+            following entries:
+
+            height          Height of the terminal window.
+                            Default: 11
+
+            prompt          fzy prompt.
+                            Default: ">>> "
+
+            statusline      Content of the 'statusline' for the terminal
+                            window.
+                            Default: "fzy-term"
+
+            Returns the buffer number of the terminal window. If opening the
+            window fails zero is returned.
+
+            The terminal window will always appear at the bottom and occupy
+            the full width of the Vim window.
+
+            Note Only one fzy process can be running at a time. It is not
+            possible to open a second fzy window.
+
+fzy#stop()                                                        *fzy#stop()*
+            Stop the currently running fzy process.
+
+==============================================================================
+EXAMPLES                                                        *fzy-examples*
+
+Fuzzy-select a |colorscheme|:
+>
+    let s:items = getcompletion('', 'color')
+
+    function! s:fzy_cb(item)
+        execute 'colorscheme' a:item
+    endfunction
+
+    call fzy#start(s:items, function('s:fzy_cb'), {
+            \ 'height': 10,
+            \ 'prompt': '>>> ',
+            \ 'statusline': ':colorscheme {name}'
+            \ })
+<
+
+Run find(1) asynchronously and |edit| the fuzzy-selected file in the current
+window:
+>
+    let s:items = 'find -name .git -prune -o -print'
+    call fzy#start(s:items, {item -> execute('edit ' . item)}, {
+            \ 'height': 15,
+            \ 'statusline': ':edit {fname}'
+            \ })
+<
+
+==============================================================================
+AVAILABLE SOURCES                                                *fzy-sources*
+
+TODO: add links to available |vim-fzy| sources.
+
+ vim:tw=78:et:ft=help:norl:
