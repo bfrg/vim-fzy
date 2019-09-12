@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 11, 2019
+" Last Change:  Sep 12, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -96,6 +96,10 @@ function! fzy#start(opts) abort
     call s:windo(1)
 
     return s:fzybuf
+endfunction
+
+function! fzy#stop() abort
+    return job_stop(term_getjob(s:fzybuf))
 endfunction
 
 let &cpoptions = s:save_cpo
