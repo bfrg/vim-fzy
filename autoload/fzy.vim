@@ -1,5 +1,5 @@
 " ==============================================================================
-" Run fzy asynchronously in a terminal window inside Vim
+" Run fzy asynchronously inside a Vim terminal-window
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
@@ -47,27 +47,28 @@ function! s:windo(mode) abort
 endfunction
 
 " See issue: https://github.com/vim/vim/issues/3522
-function! fzy#start(opts) abort
-    if !has_key(a:opts, 'items') || empty(a:opts.items)
-        return s:error('vim-fzy: No items passed.')
+function! fzy#start(items, on_select_cb, ...) abort
+    if empty(a:items)
+        return s:error('vim-fzy: No items passed')
     endif
 
+    let opts = a:0 ? a:1 : s:defaults
     let winid = win_getid()
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
-            \ get(a:opts, 'height', s:defaults.height) - 1,
-            \ shellescape(get(a:opts, 'prompt', s:defaults.prompt)),
+            \ get(opts, 'height', s:defaults.height) - 1,
+            \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
             \ s:filename
             \ )
 
-    if type(a:opts.items) ==  v:t_list
+    if type(a:items) ==  v:t_list
         let shell_cmd = printf('printf %s | %s',
-                \ substitute(shellescape(join(a:opts.items, '\n')), '%', '%%', 'g'),
+                \ substitute(shellescape(join(a:items, '\n')), '%', '%%', 'g'),
                 \ fzy
                 \ )
-    elseif type(a:opts.items) == v:t_string
-        let shell_cmd = a:opts.items .. '|' .. fzy
+    elseif type(a:items) == v:t_string
+        let shell_cmd = a:items .. '|' .. fzy
     else
-        return s:error('vim-fzy: Only list and string supported.')
+        return s:error('vim-fzy: Only list and string supported')
     endif
 
     function! s:exit_cb(job, status) abort closure
@@ -76,7 +77,7 @@ function! fzy#start(opts) abort
         call win_gotoid(winid)
         if filereadable(s:filename)
             try
-                call a:opts.on_select_cb(readfile(s:filename)[0])
+                call a:on_select_cb(readfile(s:filename)[0])
             catch /^Vim\%((\a\+)\)\=:E684/
             endtry
         endif
@@ -88,11 +89,11 @@ function! fzy#start(opts) abort
             \ 'norestore': 1,
             \ 'exit_cb': function('s:exit_cb'),
             \ 'term_name': 'fzy',
-            \ 'term_rows': get(a:opts, 'height', s:defaults.height)
+            \ 'term_rows': get(opts, 'height', s:defaults.height)
             \ })
     call term_wait(s:fzybuf, 20)
     setlocal nonumber norelativenumber winfixheight
-    let &l:statusline = a:opts.statusline
+    let &l:statusline = get(opts, 'statusline', s:defaults.statusline)
     call s:windo(1)
 
     return s:fzybuf
