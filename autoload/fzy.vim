@@ -62,7 +62,7 @@ function! fzy#start(items, on_select_cb, ...) abort
 
     if type(a:items) ==  v:t_list
         let shell_cmd = printf('printf %s | %s',
-                \ substitute(shellescape(join(a:items, '\n')), '%', '%%', 'g'),
+                \ shellescape(substitute(join(a:items, '\n'), '%', '%%', 'g')),
                 \ fzy
                 \ )
     elseif type(a:items) == v:t_string
