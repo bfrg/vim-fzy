@@ -53,6 +53,9 @@ fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
 fzy#stop()                                                        *fzy#stop()*
             Stop the currently running fzy process.
 
+                                                                      *ft-fzy*
+The |filetype| of the terminal buffer where fzy is running is set to fzy.
+
 ==============================================================================
 EXAMPLES                                                        *fzy-examples*
 

@@ -92,7 +92,7 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ 'term_rows': get(opts, 'height', s:defaults.height)
             \ })
     call term_wait(s:fzybuf, 20)
-    setlocal nonumber norelativenumber winfixheight
+    setlocal nonumber norelativenumber winfixheight filetype=fzy
     let &l:statusline = get(opts, 'statusline', s:defaults.statusline)
     call s:windo(1)
 
