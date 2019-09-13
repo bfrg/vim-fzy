@@ -48,7 +48,7 @@ endfunction
 " See issue: https://github.com/vim/vim/issues/3522
 function! fzy#start(items, on_select_cb, ...) abort
     if empty(a:items)
-        return s:error('vim-fzy: No items passed')
+        return s:error('fzy-E10: No items passed')
     endif
 
     let opts = a:0 ? a:1 : s:defaults
@@ -67,7 +67,7 @@ function! fzy#start(items, on_select_cb, ...) abort
     elseif type(a:items) == v:t_string
         let shell_cmd = a:items .. '|' .. fzy
     else
-        return s:error('vim-fzy: Only list and string supported')
+        return s:error('fzy-E11: Only list and string supported')
     endif
 
     function! s:exit_cb(job, status) abort closure
@@ -100,7 +100,7 @@ endfunction
 
 function! fzy#stop() abort
     if &buftype !=# 'terminal' && bufname('%') !=# 'fzy'
-        return s:error('vim-fzy: fzy#stop() must be called with focus on a fzy terminal window')
+        return s:error('fzy-E12: Not a fzy terminal window')
     endif
     return job_stop(term_getjob(s:fzybuf))
 endfunction

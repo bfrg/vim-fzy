@@ -15,11 +15,12 @@ the selected item.
 ==============================================================================
 API                                                                  *fzy-api*
 
-fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
+                                             *fzy-E10* *fzy-E11* *fzy#start()*
+fzy#start({items}, {callback} [, {options}])
             Open a |terminal-window| and run fzy in it.
 
-            {items} can be a |string| or a |list| of strings. When a string is
-            passed, the string will be run as a command in 'shell' and its
+            {items} must be a |string| or a |list| of strings. When a string
+            is passed, the string will be run as a command in 'shell' and its
             output piped to fzy. If items is a list, the items are piped to
             fzy using the shell's printf command.
 
@@ -47,7 +48,7 @@ fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
             The terminal window will always appear at the bottom and occupy
             the full width of the Vim window.
 
-fzy#stop()                                                        *fzy#stop()*
+fzy#stop()                                              *fzy-E12* *fzy#stop()*
             Stop a running fzy process and close the corresponding terminal
             window. The function must be called with focus on a fzy terminal
             window. If the buffer is not a terminal window, an error is
