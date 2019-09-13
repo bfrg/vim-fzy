@@ -1,14 +1,21 @@
 # vim-fzy
 
-vim-fzy provides a simple API for running [fzy][fzy] asynchronously in a Vim
-terminal window and invoking a callback function with the selected item.
+vim-fzy provides a simple API for running the fuzzy-searcher [fzy][fzy]
+asynchronously in a Vim terminal window and invoking a callback function with
+the selected item.
 
-**Note:** This plugin does not provide any read-to-use commands.
+**Note:** This plugin does not provide any ready-to-use commands. See
+[available sources](#Available-sources) below for common extensions.
 
 The terminal window will always appear at the bottom and occupy the full width
 of the Vim window.
 
 
+## Available sources
+
+| Extension                | Items                                                |
+|--------------------------|------------------------------------------------------|
+| [vim-fzy-common][common] | `tags`, `buffers`, `oldfiles`, `help`                |
 ## API usage
 
 The following are simple examples on how to use the API. For more details see
@@ -89,7 +96,7 @@ Plug 'bfrg/vim-fzy'
 
 Distributed under the same terms as Vim itself. See `:help license`.
 
-
 [fzy]: https://github.com/jhawthorn/fzy
 [find]: https://pubs.opengroup.org/onlinepubs/009695399/utilities/find.html
+[common]: https://github.com/bfrg/vim-fzy-common
 [plug]: https://github.com/junegunn/vim-plug
