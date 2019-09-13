@@ -81,7 +81,7 @@ name. For more details see `:help packages`.
 Assuming [vim-plug][plug] is your favorite plugin manager, add the following to
 your `.vimrc`:
 ```vim
-Plug 'bfrg/vim-qf-preview'
+Plug 'bfrg/vim-fzy'
 ```
 
 
