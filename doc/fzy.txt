@@ -23,7 +23,7 @@ fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
             output piped to fzy. If items is a list, the items are piped to
             fzy using the shell's printf command.
 
-            {callback} is |Funcref| that is invoked after an item has been
+            {callback} is a |Funcref| that is invoked after an item has been
             selected. The function is called after the terminal window is
             closed. The callback function is called with one argument, the
             selected item. See |fzy-examples| below.
@@ -31,13 +31,13 @@ fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
             {options} is an optional |Dictionary| that can contain the
             following entries:
 
-            height          Height of the terminal window.
+            "height"        Height of the terminal window.
                             Default: 11
 
-            prompt          fzy prompt.
+            "prompt"        fzy prompt.
                             Default: ">>> "
 
-            statusline      Content of the 'statusline' for the terminal
+            "statusline"    Content of the 'statusline' for the terminal
                             window.
                             Default: "fzy-term"
 
