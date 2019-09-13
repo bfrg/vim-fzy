@@ -47,11 +47,12 @@ fzy#start({items}, {callback} [, {options}])                     *fzy#start()*
             The terminal window will always appear at the bottom and occupy
             the full width of the Vim window.
 
-            Note Only one fzy process can be running at a time. It is not
-            possible to open a second fzy window.
-
 fzy#stop()                                                        *fzy#stop()*
-            Stop the currently running fzy process.
+            Stop a running fzy process and close the corresponding terminal
+            window. The function must be called with focus on a fzy terminal
+            window. If the buffer is not a terminal window, an error is
+            emitted.
+            The result is a number. See |job_stop()| for details.
 
                                                                       *ft-fzy*
 The |filetype| of the terminal buffer where fzy is running is set to fzy.

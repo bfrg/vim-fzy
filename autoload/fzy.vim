@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 12, 2019
+" Last Change:  Sep 13, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -11,7 +11,6 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:defaults = {'height': 11, 'prompt': '>>> ', 'statusline': 'fzy-term'}
-let s:fzybuf = 0
 let s:filename = tempname()
 
 function! s:error(msg) abort
@@ -85,21 +84,24 @@ function! fzy#start(items, on_select_cb, ...) abort
     endfunction
 
     call s:windo(0)
-    botright let s:fzybuf = term_start([&shell, &shellcmdflag, shell_cmd], {
+    botright let fzybuf = term_start([&shell, &shellcmdflag, shell_cmd], {
             \ 'norestore': 1,
-            \ 'exit_cb': function('s:exit_cb'),
+            \ 'exit_cb': funcref('s:exit_cb'),
             \ 'term_name': 'fzy',
             \ 'term_rows': get(opts, 'height', s:defaults.height)
             \ })
-    call term_wait(s:fzybuf, 20)
+    call term_wait(fzybuf, 20)
     setlocal nonumber norelativenumber winfixheight filetype=fzy
     let &l:statusline = get(opts, 'statusline', s:defaults.statusline)
     call s:windo(1)
 
-    return s:fzybuf
+    return fzybuf
 endfunction
 
 function! fzy#stop() abort
+    if &buftype !=# 'terminal' && bufname('%') !=# 'fzy'
+        return s:error('vim-fzy: fzy#stop() must be called with focus on a fzy terminal window')
+    endif
     return job_stop(term_getjob(s:fzybuf))
 endfunction
 
