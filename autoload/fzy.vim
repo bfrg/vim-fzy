@@ -102,7 +102,7 @@ function! fzy#stop() abort
     if &buftype !=# 'terminal' && bufname('%') !=# 'fzy'
         return s:error('fzy-E12: Not a fzy terminal window')
     endif
-    return job_stop(term_getjob(s:fzybuf))
+    return job_stop(term_getjob(bufnr('%')))
 endfunction
 
 let &cpoptions = s:save_cpo
