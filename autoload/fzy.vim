@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 13, 2019
+" Last Change:  Sep 18, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -99,7 +99,7 @@ function! fzy#start(items, on_select_cb, ...) abort
 endfunction
 
 function! fzy#stop() abort
-    if &buftype !=# 'terminal' && bufname('%') !=# 'fzy'
+    if &buftype !=# 'terminal' || bufname('%') !=# 'fzy'
         return s:error('fzy-E12: Not a fzy terminal window')
     endif
     return job_stop(term_getjob(bufnr('%')))
