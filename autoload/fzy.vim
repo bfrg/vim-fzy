@@ -51,6 +51,7 @@ function! fzy#start(items, on_select_cb, ...) abort
     endif
 
     let filename = tempname()
+    let itemsfile = tempname()
     let opts = a:0 ? a:1 : s:defaults
     let winid = win_getid()
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
@@ -60,12 +61,15 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ )
 
     if type(a:items) ==  v:t_list
-        let shell_cmd = printf('printf %s | %s',
-                \ shellescape(substitute(join(a:items, '\n'), '%', '%%', 'g')),
-                \ fzy
-                \ )
+        let printargs = shellescape(substitute(join(a:items, '\n'), '%', '%%', 'g'))
+        if len(printargs) > 131071
+            call writefile(a:items, itemsfile)
+            let shellcmd = fzy .. ' < ' .. itemsfile
+        else
+            let shellcmd = printf('command printf %s | %s', printargs, fzy)
+        endif
     elseif type(a:items) == v:t_string
-        let shell_cmd = a:items .. '|' .. fzy
+        let shellcmd = a:items .. '|' .. fzy
     else
         return s:error('fzy-E11: Only list and string supported')
     endif
@@ -81,10 +85,11 @@ function! fzy#start(items, on_select_cb, ...) abort
             endtry
         endif
         call delete(filename)
+        call delete(itemsfile)
     endfunction
 
     call s:windo(0)
-    botright let fzybuf = term_start([&shell, &shellcmdflag, shell_cmd], {
+    botright let fzybuf = term_start([&shell, &shellcmdflag, shellcmd], {
             \ 'norestore': 1,
             \ 'exit_cb': funcref('s:exit_cb'),
             \ 'term_name': 'fzy',
