@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 18, 2019
+" Last Change:  Sep 19, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -11,7 +11,6 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:defaults = {'height': 11, 'prompt': '>>> ', 'statusline': 'fzy-term'}
-let s:filename = tempname()
 
 function! s:error(msg) abort
     echohl ErrorMsg
@@ -51,12 +50,13 @@ function! fzy#start(items, on_select_cb, ...) abort
         return s:error('fzy-E10: No items passed')
     endif
 
+    let filename = tempname()
     let opts = a:0 ? a:1 : s:defaults
     let winid = win_getid()
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
             \ get(opts, 'height', s:defaults.height) - 1,
             \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
-            \ s:filename
+            \ filename
             \ )
 
     if type(a:items) ==  v:t_list
@@ -74,13 +74,13 @@ function! fzy#start(items, on_select_cb, ...) abort
         close
         call s:windo(2)
         call win_gotoid(winid)
-        if filereadable(s:filename)
+        if filereadable(filename)
             try
-                call a:on_select_cb(readfile(s:filename)[0])
+                call a:on_select_cb(readfile(filename)[0])
             catch /^Vim\%((\a\+)\)\=:E684/
             endtry
         endif
-        call delete(s:filename)
+        call delete(filename)
     endfunction
 
     call s:windo(0)
