@@ -21,7 +21,7 @@ fzy#start({items}, {callback} [, {options}])
 
             {items} must be a |string| or a |list| of strings. When a string
             is passed, the string will be run as a command in 'shell' and its
-            output piped to fzy. If items is a list, the items are piped to
+            output piped to fzy. If {items} is a list, the items are piped to
             fzy using the shell's printf command.
 
             {callback} is a |Funcref| that is invoked after an item has been
