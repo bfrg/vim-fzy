@@ -44,27 +44,45 @@ function! s:windo(mode) abort
     endtry
 endfunction
 
+function! s:exit_cb(job, status) abort dict
+    close
+    call s:windo(2)
+    call win_gotoid(self.winid)
+    if filereadable(self.selectfile)
+        try
+            call self.on_select_cb(readfile(self.selectfile)[0])
+        catch /^Vim\%((\a\+)\)\=:E684/
+        endtry
+    endif
+    call delete(self.selectfile)
+    call delete(self.itemsfile)
+endfunction
+
 " See issue: https://github.com/vim/vim/issues/3522
 function! fzy#start(items, on_select_cb, ...) abort
     if empty(a:items)
         return s:error('fzy-E10: No items passed')
     endif
 
-    let filename = tempname()
-    let itemsfile = tempname()
+    let exit_cb_ctx = {
+            \ 'winid': win_getid(),
+            \ 'selectfile': tempname(),
+            \ 'itemsfile': tempname(),
+            \ 'on_select_cb': a:on_select_cb
+            \ }
+
     let opts = a:0 ? a:1 : s:defaults
-    let winid = win_getid()
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
             \ get(opts, 'height', s:defaults.height) - 1,
             \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
-            \ filename
+            \ exit_cb_ctx.selectfile
             \ )
 
     if type(a:items) ==  v:t_list
         let printargs = shellescape(substitute(join(a:items, '\n'), '%', '%%', 'g'))
         if len(printargs) > 131071
-            call writefile(a:items, itemsfile)
-            let shellcmd = fzy .. ' < ' .. itemsfile
+            call writefile(a:items, exit_cb_ctx.itemsfile)
+            let shellcmd = fzy .. ' < ' .. exit_cb_ctx.itemsfile
         else
             let shellcmd = printf('command printf %s | %s', printargs, fzy)
         endif
@@ -74,24 +92,10 @@ function! fzy#start(items, on_select_cb, ...) abort
         return s:error('fzy-E11: Only list and string supported')
     endif
 
-    function! s:exit_cb(job, status) abort closure
-        close
-        call s:windo(2)
-        call win_gotoid(winid)
-        if filereadable(filename)
-            try
-                call a:on_select_cb(readfile(filename)[0])
-            catch /^Vim\%((\a\+)\)\=:E684/
-            endtry
-        endif
-        call delete(filename)
-        call delete(itemsfile)
-    endfunction
-
     call s:windo(0)
     botright let fzybuf = term_start([&shell, &shellcmdflag, shellcmd], {
             \ 'norestore': 1,
-            \ 'exit_cb': funcref('s:exit_cb'),
+            \ 'exit_cb': funcref('s:exit_cb', exit_cb_ctx),
             \ 'term_name': 'fzy',
             \ 'term_rows': get(opts, 'height', s:defaults.height)
             \ })
