@@ -5,68 +5,78 @@ asynchronously in a Vim terminal window and invoking a callback function with
 the selected item.
 
 **Note:** This plugin does not provide any ready-to-use commands. See
-[available sources](#Available-sources) below for common extensions.
+[available sources](#Available-sources) below for some common extensions.
 
-The terminal window will always appear at the bottom and occupy the full width
+Currently the terminal window appears at the bottom and occupies the full width
 of the Vim window.
 
 
 ## Available sources
 
-| Extension                | Items                                                |
-|--------------------------|------------------------------------------------------|
-| [vim-fzy-common][common] | `tags`, `buffers`, `oldfiles`, `help`                |
+| Extension                | Items                                        |
+|--------------------------|----------------------------------------------|
+| [vim-fzy-common][common] | buffers, args, tags, `oldfiles`, help tags   |
+
+
 ## API usage
 
-The following are simple examples on how to use the API. For more details see
-`:help fzy-api`.
+The following snippets are simple examples on how to use the API. For more
+details see `:help fzy-api`.
 
 #### Switch colorscheme
 
-Fuzzy-select a colorscheme using `fzy`:
+Fuzzy-select a colorscheme:
 ```vim
-let items = getcompletion('', 'color')
-
 function! s:fzy_cb(item)
     execute 'colorscheme' a:item
 endfunction
 
-call fzy#start(items, function('s:fzy_cb'), {
-        \ 'height': 10,
-        \ 'prompt': '>>> ',
-        \ 'statusline': ':colorscheme {name}'
-        \ })
+function! s:setcolors() abort
+    let items = getcompletion('', 'color')
+    return fzy#start(items, function('s:fzy_cb'), {
+            \ 'height': 10,
+            \ 'prompt': '▶ ',
+            \ 'statusline': ':colorscheme {name}'
+            \ })
+endfunction
+
+command! -bar Color call s:setcolors()
+nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
 ```
-You will probably want to define a user-command or add a key mapping.
 
 #### Jump to a tag
 
-List all tags and jump to the selected tag:
+List all tags and jump to the selected tag in the current window:
 ```vim
-let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
-
 function! s:tags_cb(item) abort
     execute 'tjump' escape(a:item, '"')
 endfunction
 
-call fzy#start(items, function('s:tags_cb'), {
-        \ 'statusline': printf(':tjump [%d tags]', len(items)),
-        \ 'height': 15
-        \ })
+function! s:fuzzytags() abort
+    let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
+    return fzy#start(items, function('s:tags_cb'), {
+            \ 'height': 15,
+            \ 'statusline': printf(':tjump [%d tags]', len(items))
+            \ })
+endfunction
+command! -bar Tjump call s:fuzzytags()
 ```
 
-#### Find files recursively under current working directory
+#### Find files recursively under a directory
 
-List file under current working directory using [find(1)][find] and edit the
+List files under a specified directory using [find(1)][find] and edit the
 selected file in the current window:
 ```vim
-" Ignore .git directories"
-let items = 'find -name .git -prune -o -print'
-
-call fzy#start(items, {item -> execute('edit ' . item)}, {
-        \ 'height': 15,
-        \ 'statusline': ':edit {fname}'
-        \ })
+function! s:fuzzyfind(dir) abort
+    " Ignore .git directories
+    let items = printf('find %s -name .git -prune -o -print', a:dir)
+    return fzy#start(items, {item -> execute('edit ' . fnameescape(item))}, {
+            \ 'height': 15,
+            \ 'prompt': '>> ',
+            \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
+            \ })
+endfunction
+command! -bar -nargs=? -complete=dir FzyFind call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
 ```
 
 
