@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 19, 2019
+" Last Change:  Sep 20, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -58,13 +58,23 @@ function! s:exit_cb(job, status) abort dict
     call delete(self.itemsfile)
 endfunction
 
+function! s:term_open(shellcmd, rows, exit_cb_ctx)
+    botright let bufnr = term_start([&shell, &shellcmdflag, a:shellcmd], {
+            \ 'norestore': 1,
+            \ 'exit_cb': funcref('s:exit_cb', a:exit_cb_ctx),
+            \ 'term_name': 'fzy',
+            \ 'term_rows': a:rows
+            \ })
+    return bufnr
+endfunction
+
 " See issue: https://github.com/vim/vim/issues/3522
 function! fzy#start(items, on_select_cb, ...) abort
     if empty(a:items)
         return s:error('fzy-E10: No items passed')
     endif
 
-    let exit_cb_ctx = {
+    let ctx = {
             \ 'winid': win_getid(),
             \ 'selectfile': tempname(),
             \ 'itemsfile': tempname(),
@@ -72,33 +82,31 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ }
 
     let opts = a:0 ? a:1 : s:defaults
+    let rows = get(opts, 'height', s:defaults.height)
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
             \ get(opts, 'height', s:defaults.height) - 1,
             \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
-            \ exit_cb_ctx.selectfile
+            \ ctx.selectfile
             \ )
 
+    call s:windo(0)
     if type(a:items) ==  v:t_list
-        let printargs = shellescape(substitute(join(a:items, '\n'), '%', '%%', 'g'))
-        if len(printargs) > 131071
-            call writefile(a:items, exit_cb_ctx.itemsfile)
-            let shellcmd = fzy .. ' < ' .. exit_cb_ctx.itemsfile
+        let shellcmd = fzy .. ' < ' .. ctx.itemsfile
+        if executable('mkfifo')
+            call system('mkfifo ' .. ctx.itemsfile)
+            let fzybuf = s:term_open(shellcmd, rows, ctx)
+            call writefile(a:items, ctx.itemsfile)
         else
-            let shellcmd = printf('command printf %s | %s', printargs, fzy)
+            call writefile(a:items, ctx.itemsfile)
+            let fzybuf = s:term_open(shellcmd, rows, ctx)
         endif
     elseif type(a:items) == v:t_string
         let shellcmd = a:items .. '|' .. fzy
+        let fzybuf = s:term_open(shellcmd, rows, ctx)
     else
         return s:error('fzy-E11: Only list and string supported')
     endif
 
-    call s:windo(0)
-    botright let fzybuf = term_start([&shell, &shellcmdflag, shellcmd], {
-            \ 'norestore': 1,
-            \ 'exit_cb': funcref('s:exit_cb', exit_cb_ctx),
-            \ 'term_name': 'fzy',
-            \ 'term_rows': get(opts, 'height', s:defaults.height)
-            \ })
     call term_wait(fzybuf, 20)
     setlocal nonumber norelativenumber winfixheight filetype=fzy
     let &l:statusline = get(opts, 'statusline', s:defaults.statusline)

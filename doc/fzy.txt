@@ -21,8 +21,10 @@ fzy#start({items}, {callback} [, {options}])
 
             {items} must be a |string| or a |list| of strings. When a string
             is passed, the string will be run as a command in 'shell' and its
-            output piped to fzy. If {items} is a list, the items are piped to
-            fzy using the shell's printf command.
+            output piped to fzy. If {items} is a list, on systems that support
+            FIFOs (named pipes), the items are written to a FIFO and passed as
+            stdin to fzy. On all other systems, the items are instead written
+            to a temporary file on disk.
 
             {callback} is a |Funcref| that is invoked after an item has been
             selected. The function is called after the terminal window is
