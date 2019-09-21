@@ -3,14 +3,14 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 20, 2019
+" Last Change:  Sep 21, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-let s:defaults = {'height': 11, 'prompt': '>>> ', 'statusline': 'fzy-term'}
+let s:defaults = {'height': 11, 'prompt': '> ', 'statusline': 'fzy-term'}
 
 function! s:error(msg) abort
     echohl ErrorMsg

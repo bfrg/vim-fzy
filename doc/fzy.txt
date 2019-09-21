@@ -38,7 +38,7 @@ fzy#start({items}, {callback} [, {options}])
                             Default: 11
 
             "prompt"        fzy prompt.
-                            Default: ">>> "
+                            Default: "> "
 
             "statusline"    Content of the 'statusline' for the terminal
                             window.
