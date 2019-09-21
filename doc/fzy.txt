@@ -23,8 +23,9 @@ fzy#start({items}, {callback} [, {options}])
             is passed, the string will be run as a command in 'shell' and its
             output piped to fzy. If {items} is a list, on systems that support
             FIFOs (named pipes), the items are written to a FIFO and passed as
-            stdin to fzy. On all other systems, the items are instead written
-            to a temporary file on disk.
+            stdin to fzy. On all other systems that do not provide an "mkfifo"
+            command, the items are instead written to a temporary file on
+            disk before passed to fzy.
 
             {callback} is a |Funcref| that is invoked after an item has been
             selected. The function is called after the terminal window is
@@ -65,27 +66,37 @@ EXAMPLES                                                        *fzy-examples*
 
 Fuzzy-select a |colorscheme|:
 >
-    let s:items = getcompletion('', 'color')
-
     function! s:fzy_cb(item)
         execute 'colorscheme' a:item
     endfunction
 
-    call fzy#start(s:items, function('s:fzy_cb'), {
-            \ 'height': 10,
-            \ 'prompt': '>>> ',
-            \ 'statusline': ':colorscheme {name}'
-            \ })
+    function! s:setcolors() abort
+        let items = getcompletion('', 'color')
+        return fzy#start(items, function('s:fzy_cb'), {
+                \ 'height': 10,
+                \ 'prompt': '▶ ',
+                \ 'statusline': ':colorscheme {name}'
+                \ })
+    endfunction
+
+    command! -bar Color call s:setcolors()
+    nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
 <
 
-Run find(1) asynchronously and |edit| the fuzzy-selected file in the current
-window:
+List files under a specified directory using find(1) and |edit| the selected
+file in the current window:
 >
-    let s:items = 'find -name .git -prune -o -print'
-    call fzy#start(s:items, {item -> execute('edit ' . item)}, {
-            \ 'height': 15,
-            \ 'statusline': ':edit {fname}'
-            \ })
+    function! s:fuzzyfind(dir) abort
+        " Ignore .git directories
+        let items = printf('find %s -name .git -prune -o -print', a:dir)
+        return fzy#start(items, {i -> execute('edit ' . fnameescape(i))}, {
+                \ 'height': 15,
+                \ 'prompt': '▶ ',
+                \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
+                \ })
+    endfunction
+    command! -bar -nargs=? -complete=dir FzyFind
+            \ call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
 <
 
 ==============================================================================
