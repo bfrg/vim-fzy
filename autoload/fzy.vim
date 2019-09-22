@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 21, 2019
+" Last Change:  Sep 22, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -11,6 +11,14 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 let s:defaults = {'height': 11, 'prompt': '> ', 'statusline': 'fzy-term'}
+
+function! s:get(dict, key) abort
+    return has_key(a:dict, a:key)
+            \ ? get(a:dict, a:key)
+            \ : has_key(get(g:, 'fzy', {}), a:key)
+            \   ? get(g:fzy, a:key)
+            \   : get(s:defaults, a:key)
+endfunction
 
 function! s:error(msg) abort
     echohl ErrorMsg
@@ -81,11 +89,11 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ 'on_select_cb': a:on_select_cb
             \ }
 
-    let opts = a:0 ? a:1 : s:defaults
-    let rows = get(opts, 'height', s:defaults.height)
+    let opts = a:0 ? a:1 : {}
+    let rows = s:get(opts, 'height')
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
-            \ get(opts, 'height', s:defaults.height) - 1,
-            \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
+            \ rows - 1,
+            \ shellescape(s:get(opts, 'prompt')),
             \ ctx.selectfile
             \ )
 
@@ -109,7 +117,7 @@ function! fzy#start(items, on_select_cb, ...) abort
 
     call term_wait(fzybuf, 20)
     setlocal nonumber norelativenumber winfixheight filetype=fzy
-    let &l:statusline = get(opts, 'statusline', s:defaults.statusline)
+    let &l:statusline = s:get(opts, 'statusline')
     call s:windo(1)
 
     return fzybuf

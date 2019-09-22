@@ -33,7 +33,7 @@ fzy#start({items}, {callback} [, {options}])
             selected item. See |fzy-examples| below.
 
             {options} is an optional |Dictionary| that can contain the
-            following entries:
+            following entries (see also |g:fzy| below):
 
             "height"        Height of the terminal window.
                             Default: 11
@@ -58,13 +58,27 @@ fzy#stop()                                              *fzy-E12* *fzy#stop()*
             emitted.
             The result is a number. See |job_stop()| for details.
 
+g:fzy                                                                  *g:fzy*
+            All entries in the {options} argument are optional. If an entry is
+            not passed to |fzy#start()|, the plugin will check if the key is
+            set in |g:fzy| and use that value. If it isn't set in |g:fzy|
+            either, the default value shown above (11 for "height", etc.) is
+            used.
+
+            The motivation behind this is to allow users to omit, for example,
+            the "height" entry in all |fzy#start()| invocations and instead
+            use the value defined in |g:fzy|. See also |fzy-examples|.
+
+            Note: Other keys in |g:fzy| are ignored. Thus, plugins can put
+            their own options inside |g:fzy|.
+
                                                                       *ft-fzy*
 The |filetype| of the terminal buffer where fzy is running is set to fzy.
 
 ==============================================================================
 EXAMPLES                                                        *fzy-examples*
 
-Fuzzy-select a |colorscheme|:
+1. Fuzzy-select a |colorscheme|:
 >
     function! s:fzy_cb(item)
         execute 'colorscheme' a:item
@@ -79,25 +93,50 @@ Fuzzy-select a |colorscheme|:
                 \ })
     endfunction
 
-    command! -bar Color call s:setcolors()
+    command! Color call s:setcolors()
     nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
 <
+    Since "height", "prompt" and "statusline" are explicitly passed to
+    |fzy#start()|, any values defined in |g:fzy| are ignored.
 
-List files under a specified directory using find(1) and |edit| the selected
-file in the current window:
+2. List all |tags| and jump to the selected tag in the current window:
 >
+    function! s:tags_cb(item) abort
+        execute 'tjump' escape(a:item, '"')
+    endfunction
+
+    function! s:fuzzytags() abort
+        let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
+        return fzy#start(items, function('s:tags_cb'), {
+                \ 'height': 15,
+                \ 'statusline': printf(':tjump [%d tags]', len(items))
+                \ })
+    endfunction
+    command! Tjump call s:fuzzytags()
+<
+    Since the "prompt" entry is omitted in |fzy#start()|, the plugin will
+    check if it is defined in |g:fzy|, and if not, fall back to its default
+    value "> ".
+
+3. Find files under a specified directory using find(1) and |:edit| the
+   selected file in the current window:
+>
+    let g:fzy = {'prompt': '▶ '}
+
     function! s:fuzzyfind(dir) abort
         " Ignore .git directories
         let items = printf('find %s -name .git -prune -o -print', a:dir)
         return fzy#start(items, {i -> execute('edit ' . fnameescape(i))}, {
-                \ 'height': 15,
-                \ 'prompt': '▶ ',
                 \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
                 \ })
     endfunction
+
     command! -bar -nargs=? -complete=dir FzyFind
             \ call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
 <
+    Since "height" and "prompt" are not passed to |fzy#start()|, the global
+    value for "prompt" set in |g:fzy| is used. The height of the terminal
+    window will be set to the default value 11.
 
 ==============================================================================
 AVAILABLE SOURCES                                                *fzy-sources*

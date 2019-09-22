@@ -20,64 +20,19 @@ of the Vim window.
 
 ## API usage
 
-The following snippets are simple examples on how to use the API. For more
-details see `:help fzy-api`.
+The plugin provides two functions:
 
-#### Switch colorscheme
+* `fzy#start({items}, {callback} [, {options}])`
 
-Fuzzy-select a colorscheme:
-```vim
-function! s:fzy_cb(item)
-    execute 'colorscheme' a:item
-endfunction
+  Pass a list of items or an external command to [fzy][fzy] and open it in a
+  `terminal-window`. `{callback}` is a function that is invoked with the
+  selected item.
 
-function! s:setcolors() abort
-    let items = getcompletion('', 'color')
-    return fzy#start(items, function('s:fzy_cb'), {
-            \ 'height': 10,
-            \ 'prompt': '▶ ',
-            \ 'statusline': ':colorscheme {name}'
-            \ })
-endfunction
+* `fzy#stop()`
 
-command! -bar Color call s:setcolors()
-nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
-```
+  Stop the process running in the fzy `terminal-window` and close the window.
 
-#### Jump to a tag
-
-List all tags and jump to the selected tag in the current window:
-```vim
-function! s:tags_cb(item) abort
-    execute 'tjump' escape(a:item, '"')
-endfunction
-
-function! s:fuzzytags() abort
-    let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
-    return fzy#start(items, function('s:tags_cb'), {
-            \ 'height': 15,
-            \ 'statusline': printf(':tjump [%d tags]', len(items))
-            \ })
-endfunction
-command! -bar Tjump call s:fuzzytags()
-```
-
-#### Find files recursively under a directory
-
-List files under a specified directory using [find(1)][find] and edit the
-selected file in the current window:
-```vim
-function! s:fuzzyfind(dir) abort
-    " Ignore .git directories
-    let items = printf('find %s -name .git -prune -o -print', a:dir)
-    return fzy#start(items, {item -> execute('edit ' . fnameescape(item))}, {
-            \ 'height': 15,
-            \ 'prompt': '>> ',
-            \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
-            \ })
-endfunction
-command! -bar -nargs=? -complete=dir FzyFind call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
-```
+For more details, see `:help fzy-api` and `:help fzy-examples`.
 
 
 ## Installation
