@@ -33,7 +33,7 @@ fzy#start({items}, {callback} [, {options}])
             selected item. See |fzy-examples| below.
 
             {options} is an optional |Dictionary| that can contain the
-            following entries (see also |g:fzy| below):
+            following entries:
 
             "height"        Height of the terminal window.
                             Default: 11
@@ -59,18 +59,19 @@ fzy#stop()                                              *fzy-E12* *fzy#stop()*
             The result is a number. See |job_stop()| for details.
 
 g:fzy                                                                  *g:fzy*
-            All entries in the {options} argument are optional. If an entry is
-            not passed to |fzy#start()|, the plugin will check if the key is
-            set in |g:fzy| and use that value. If it isn't set in |g:fzy|
-            either, the default value shown above (11 for "height", etc.) is
-            used.
+            All keys in the {options} argument in |fzy#start()| are optional.
+            If one of the keys is not passed to |fzy#start()|, the plugin will
+            check if the key is set globally in |g:fzy| and use that value. If
+            it isn't set in |g:fzy| either, the default value shown above (11
+            for "height", etc.) is used.
 
             The motivation behind this is to allow users to omit, for example,
             the "height" entry in all |fzy#start()| invocations and instead
-            use the value defined in |g:fzy|. See also |fzy-examples|.
+            set the entry in their |vimrc| through |g:fzy|. See also
+            |fzy-examples|.
 
-            Note: Other keys in |g:fzy| are ignored. Thus, plugins can put
-            their own options inside |g:fzy|.
+            Note: Other keys in |g:fzy| are ignored. Plugins using vim-fzy may
+            set their own options inside |g:fzy|.
 
                                                                       *ft-fzy*
 The |filetype| of the terminal buffer where fzy is running is set to fzy.
@@ -80,11 +81,13 @@ EXAMPLES                                                        *fzy-examples*
 
 1. Fuzzy-select a |colorscheme|:
 >
+    " Callback function invoked with the selected item
     function! s:fzy_cb(item)
         execute 'colorscheme' a:item
     endfunction
 
     function! s:setcolors() abort
+        " List of colorschemes
         let items = getcompletion('', 'color')
         return fzy#start(items, function('s:fzy_cb'), {
                 \ 'height': 10,
@@ -93,7 +96,7 @@ EXAMPLES                                                        *fzy-examples*
                 \ })
     endfunction
 
-    command! Color call s:setcolors()
+    command! -bar Color call s:setcolors()
     nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
 <
     Since "height", "prompt" and "statusline" are explicitly passed to
@@ -101,18 +104,21 @@ EXAMPLES                                                        *fzy-examples*
 
 2. List all |tags| and jump to the selected tag in the current window:
 >
+    " Callback function invoked with the selected item
     function! s:tags_cb(item) abort
         execute 'tjump' escape(a:item, '"')
     endfunction
 
     function! s:fuzzytags() abort
+        " List of tags found in all tags files
         let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
         return fzy#start(items, function('s:tags_cb'), {
                 \ 'height': 15,
                 \ 'statusline': printf(':tjump [%d tags]', len(items))
                 \ })
     endfunction
-    command! Tjump call s:fuzzytags()
+
+    command! -bar Tjump call s:fuzzytags()
 <
     Since the "prompt" entry is omitted in |fzy#start()|, the plugin will
     check if it is defined in |g:fzy|, and if not, fall back to its default
@@ -121,6 +127,7 @@ EXAMPLES                                                        *fzy-examples*
 3. Find files under a specified directory using find(1) and |:edit| the
    selected file in the current window:
 >
+    " Set fzy prompt
     let g:fzy = {'prompt': '▶ '}
 
     function! s:fuzzyfind(dir) abort
@@ -136,11 +143,6 @@ EXAMPLES                                                        *fzy-examples*
 <
     Since "height" and "prompt" are not passed to |fzy#start()|, the global
     value for "prompt" set in |g:fzy| is used. The height of the terminal
-    window will be set to the default value 11.
-
-==============================================================================
-AVAILABLE SOURCES                                                *fzy-sources*
-
-TODO: add links to available |vim-fzy| sources.
+    window will be set to its default value 11.
 
  vim:tw=78:et:ft=help:norl:
