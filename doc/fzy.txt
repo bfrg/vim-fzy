@@ -148,4 +148,29 @@ EXAMPLES                                                        *fzy-examples*
     value for "prompt" set in |g:fzy| is used. The height of the terminal
     window will be set to its default value 11.
 
+4. Find files under a specified directory using https://github.com/sharkdp/fd
+   and edit the selected file in a new |:split|:
+>
+    function! s:find_cb(dir, item) abort
+        let file = a:dir .. '/' .. fnameescape(a:item)
+        execute 'split' fnamemodify(simplify(file), ':.')
+    endfunction
+
+    function! s:fuzzyfind(dir) abort
+        let dir = fnamemodify(a:dir, ':~')
+        let items = 'fd --type f --type l'
+        return fzy#start(items, function('s:find_cb', [dir]), {
+                \ 'statusline': printf(':edit {fname} [directory: %s]', dir),
+                \ 'cwd': a:dir
+                \ })
+    endfunction
+
+    command! -bar -nargs=? -complete=dir Fd
+            \ call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
+<
+    We pass "cwd" to |fzy#start()| in order to run "fd" in the specified
+    directory directly instead of passing it to "fd". This avoids printing the
+    directory in front of every filename, and hence make the fuzzy-search more
+    efficient.
+
  vim:tw=78:et:ft=help:norl:
