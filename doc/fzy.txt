@@ -45,6 +45,9 @@ fzy#start({items}, {callback} [, {options}])
                             window.
                             Default: "fzy-term"
 
+            "cwd"           Current working directory for the shell process.
+                            Default: same as |:pwd|
+
             Returns the buffer number of the terminal window. If opening the
             window fails zero is returned.
 
@@ -60,10 +63,10 @@ fzy#stop()                                              *fzy-E12* *fzy#stop()*
 
 g:fzy                                                                  *g:fzy*
             All keys in the {options} argument in |fzy#start()| are optional.
-            If one of the keys is not passed to |fzy#start()|, the plugin will
-            check if the key is set globally in |g:fzy| and use that value. If
-            it isn't set in |g:fzy| either, the default value shown above (11
-            for "height", etc.) is used.
+            If "height", "prompt" or "statusline" is not passed to
+            |fzy#start()|, the plugin will check if the key is set globally in
+            |g:fzy| and use that value. If it isn't set in |g:fzy| either, the
+            default value shown above (11 for "height", etc.) is used.
 
             The motivation behind this is to allow users to omit, for example,
             the "height" entry in all |fzy#start()| invocations and instead
