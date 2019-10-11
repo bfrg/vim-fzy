@@ -63,7 +63,7 @@ command! -bar Color call s:setcolors()
 ```vim
 function! s:fuzzyfind(dir) abort
     " Ignore .git directories
-    let items = printf('find %s -name .git -prune -o -print', a:dir)
+    let items = printf('find %s -name .git -prune -o -type f -print', a:dir)
     return fzy#start(items, {i -> execute('edit ' . fnameescape(i))}, {
             \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
             \ })
