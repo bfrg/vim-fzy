@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Sep 22, 2019
+" Last Change:  Oct 15, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -90,7 +90,7 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ }
 
     let opts = a:0 ? a:1 : {}
-    let rows = s:get(opts, 'height')
+    let rows = s:get(opts, 'height') < 4 ? 4 : s:get(opts, 'height')
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
             \ rows - 1,
             \ shellescape(s:get(opts, 'prompt')),

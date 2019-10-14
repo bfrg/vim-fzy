@@ -35,7 +35,8 @@ fzy#start({items}, {callback} [, {options}])
             {options} is an optional |Dictionary| that can contain the
             following entries:
 
-            "height"        Height of the terminal window.
+            "height"        Height of the terminal window. The minimum height
+                            is 4 (limited by fzy)
                             Default: 11
 
             "prompt"        fzy prompt.
