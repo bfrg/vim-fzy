@@ -18,9 +18,10 @@ below for a list of plugins utilizing the API.
 
 ## Available extensions for vim-fzy
 
-| Plugin                   | Items                                        |
-|--------------------------|----------------------------------------------|
-| [vim-fzy-common][common] | buffers, args, tags, `oldfiles`, help tags   |
+| Plugin                   | Items                                             |
+|--------------------------|---------------------------------------------------|
+| [vim-fzy-common][common] | buffers, args, tags, `oldfiles`, help tags, marks |
+| [vim-fzy-find][fzy-find] | Files under a specified directory                 |
 
 
 ## Usage
@@ -104,4 +105,5 @@ Distributed under the same terms as Vim itself. See `:help license`.
 [fzy]: https://github.com/jhawthorn/fzy
 [find]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
 [common]: https://github.com/bfrg/vim-fzy-common
+[fzy-find]: https://github.com/bfrg/vim-fzy-find
 [plug]: https://github.com/junegunn/vim-plug
