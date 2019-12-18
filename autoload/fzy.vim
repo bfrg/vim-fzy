@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Oct 15, 2019
+" Last Change:  Dec 18, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -21,9 +21,7 @@ function! s:get(dict, key) abort
 endfunction
 
 function! s:error(msg) abort
-    echohl ErrorMsg
-    echomsg a:msg
-    echohl None
+    echohl ErrorMsg | echomsg a:msg | echohl None
     return -1
 endfunction
 
@@ -44,12 +42,9 @@ function! s:window_state(mode) abort
 endfunction
 
 function! s:windo(mode) abort
-    let winid = win_getid()
-    try
-        keepjumps noautocmd windo call s:window_state(a:mode)
-    finally
-        call win_gotoid(winid)
-    endtry
+    for winnr in range(1, winnr('$'))
+        call win_execute(win_getid(winnr), printf('call s:window_state(%d)', a:mode))
+    endfor
 endfunction
 
 function! s:exit_cb(job, status) abort dict
