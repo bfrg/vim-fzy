@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Dec 18, 2019
+" Last Change:  Dec 19, 2019
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -48,9 +48,10 @@ function! s:windo(mode) abort
 endfunction
 
 function! s:exit_cb(job, status) abort dict
-    close
-    call s:windo(2)
+    let winnr = winnr()
     call win_gotoid(self.winid)
+    execute winnr .. 'close'
+    call s:windo(2)
     if filereadable(self.selectfile)
         try
             call self.on_select_cb(readfile(self.selectfile)[0])
