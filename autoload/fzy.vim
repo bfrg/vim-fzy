@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Dec 19, 2019
+" Last Change:  Feb 11, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -12,17 +12,9 @@ set cpoptions&vim
 
 let s:defaults = {'height': 11, 'prompt': '> ', 'statusline': 'fzy-term'}
 
-function! s:get(dict, key) abort
-    return has_key(a:dict, a:key)
-            \ ? get(a:dict, a:key)
-            \ : has_key(get(g:, 'fzy', {}), a:key)
-            \   ? get(g:fzy, a:key)
-            \   : get(s:defaults, a:key)
-endfunction
-
 function! s:error(msg) abort
     echohl ErrorMsg | echomsg a:msg | echohl None
-    return -1
+    return 0
 endfunction
 
 " Save and restore the view of the current window
@@ -85,11 +77,11 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ 'on_select_cb': a:on_select_cb
             \ }
 
-    let opts = a:0 ? a:1 : {}
-    let rows = s:get(opts, 'height') < 4 ? 4 : s:get(opts, 'height')
+    let opts = a:0 ? a:1 : s:defaults
+    let rows = get(opts, 'height', s:defaults.height)
     let fzy = printf('fzy --lines=%d --prompt=%s > %s',
-            \ rows - 1,
-            \ shellescape(s:get(opts, 'prompt')),
+            \ (rows < 4 ? 3 : rows - 1),
+            \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
             \ ctx.selectfile
             \ )
 
@@ -113,7 +105,7 @@ function! fzy#start(items, on_select_cb, ...) abort
 
     call term_wait(fzybuf, 20)
     setlocal nonumber norelativenumber winfixheight filetype=fzy
-    let &l:statusline = s:get(opts, 'statusline')
+    let &l:statusline = get(opts, 'statusline', s:defaults.statusline)
     call s:windo(1)
 
     return fzybuf

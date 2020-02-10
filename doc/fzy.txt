@@ -30,7 +30,7 @@ fzy#start({items}, {callback} [, {options}])
             {callback} is a |Funcref| that is invoked after an item has been
             selected. The function is called after the terminal window is
             closed. The callback function is called with one argument, the
-            selected item. See |fzy-examples| below.
+            selected item. See also |fzy-examples| below.
 
             {options} is an optional |Dictionary| that can contain the
             following entries:
@@ -59,21 +59,6 @@ fzy#stop()                                              *fzy-E12* *fzy#stop()*
             emitted.
             The result is a number. See |job_stop()| for details.
 
-g:fzy                                                                  *g:fzy*
-            All keys in the {options} argument in |fzy#start()| are optional.
-            If one of the keys is not passed to |fzy#start()|, the plugin will
-            check if the key is set globally in |g:fzy| and use that value. If
-            it isn't set in |g:fzy| either, the default value shown above (11
-            for "height", etc.) is used.
-
-            The motivation behind this is to allow users to omit, for example,
-            the "height" entry in all |fzy#start()| invocations and instead
-            set the entry in their |vimrc| through |g:fzy|. See also
-            |fzy-examples|.
-
-            Note: Other keys in |g:fzy| are ignored. Plugins using vim-fzy may
-            set their own options inside |g:fzy|.
-
                                                                       *ft-fzy*
 The |filetype| of the terminal buffer where fzy is running is set to fzy.
 
@@ -100,8 +85,6 @@ EXAMPLES                                                        *fzy-examples*
     command! -bar Color call s:setcolors()
     nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
 <
-    Since "height", "prompt" and "statusline" are explicitly passed to
-    |fzy#start()|, any values defined in |g:fzy| are ignored.
 
 2. List all |tags| and jump to the selected tag in the current window:
 >
@@ -115,27 +98,24 @@ EXAMPLES                                                        *fzy-examples*
         let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
         return fzy#start(items, function('s:tags_cb'), {
                 \ 'height': 15,
+                \ 'prompt': '▶ ',
                 \ 'statusline': printf(':tjump [%d tags]', len(items))
                 \ })
     endfunction
 
     command! -bar Tjump call s:fuzzytags()
 <
-    Since the "prompt" entry is omitted in |fzy#start()|, the plugin will
-    check if it is defined in |g:fzy|, and if not, fall back to its default
-    value "> ".
 
 3. Find files under a specified directory using find(1) and |:edit| the
    selected file in the current window:
 >
-    " Set fzy prompt
-    let g:fzy = {'prompt': '▶ '}
-
     function! s:fuzzyfind(dir) abort
         " Ignore .git directories
         let items = printf('find %s -name .git -prune -o -type f -print',
                 \ a:dir)
         return fzy#start(items, {i -> execute('edit ' . fnameescape(i))}, {
+                \ 'height': 15,
+                \ 'prompt': '▶ ',
                 \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
                 \ })
     endfunction
@@ -143,8 +123,5 @@ EXAMPLES                                                        *fzy-examples*
     command! -bar -nargs=? -complete=dir FzyFind
             \ call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
 <
-    Since "height" and "prompt" are not passed to |fzy#start()|, the global
-    value for "prompt" set in |g:fzy| is used. The height of the terminal
-    window will be set to its default value 11.
 
  vim:tw=78:et:ft=help:norl:
