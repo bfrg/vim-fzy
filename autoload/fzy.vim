@@ -51,7 +51,9 @@ function! s:exit_cb(ctx, job, status) abort
         endtry
     endif
     call delete(a:ctx.selectfile)
-    call delete(a:ctx.itemsfile)
+    if has_key(a:ctx, 'itemsfile')
+        call delete(a:ctx.itemsfile)
+    endif
 endfunction
 
 function! s:term_open(shellcmd, rows, exit_cb_ctx)
@@ -73,7 +75,6 @@ function! fzy#start(items, on_select_cb, ...) abort
     let ctx = {
             \ 'winid': win_getid(),
             \ 'selectfile': tempname(),
-            \ 'itemsfile': tempname(),
             \ 'on_select_cb': a:on_select_cb
             \ }
 
@@ -87,6 +88,7 @@ function! fzy#start(items, on_select_cb, ...) abort
 
     call s:windo(0)
     if type(a:items) ==  v:t_list
+        let ctx.itemsfile = tempname()
         let shellcmd = fzy .. ' < ' .. ctx.itemsfile
         if executable('mkfifo')
             call system('mkfifo ' .. ctx.itemsfile)
