@@ -39,25 +39,25 @@ function! s:windo(mode) abort
     endfor
 endfunction
 
-function! s:exit_cb(job, status) abort dict
+function! s:exit_cb(ctx, job, status) abort
     let winnr = winnr()
-    call win_gotoid(self.winid)
+    call win_gotoid(a:ctx.winid)
     execute winnr .. 'close'
     call s:windo(2)
-    if filereadable(self.selectfile)
+    if filereadable(a:ctx.selectfile)
         try
-            call self.on_select_cb(readfile(self.selectfile)[0])
+            call a:ctx.on_select_cb(readfile(a:ctx.selectfile)[0])
         catch /^Vim\%((\a\+)\)\=:E684/
         endtry
     endif
-    call delete(self.selectfile)
-    call delete(self.itemsfile)
+    call delete(a:ctx.selectfile)
+    call delete(a:ctx.itemsfile)
 endfunction
 
 function! s:term_open(shellcmd, rows, exit_cb_ctx)
     botright let bufnr = term_start([&shell, &shellcmdflag, a:shellcmd], {
             \ 'norestore': 1,
-            \ 'exit_cb': funcref('s:exit_cb', a:exit_cb_ctx),
+            \ 'exit_cb': funcref('s:exit_cb', [a:exit_cb_ctx]),
             \ 'term_name': 'fzy',
             \ 'term_rows': a:rows
             \ })
