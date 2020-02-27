@@ -30,18 +30,27 @@ below for a list of plugins utilizing the API.
 
 vim-fzy provides two functions:
 
-1. **`fzy#start({items}, {callback} [, {options}])`**<br/>
-Open a new terminal window with `{items}` passed as stdin to fzy.
-`{callback}` is a function that is invoked with the selected item.
+#### `fzy#start({items}, {callback} [, {options}])`
 
-2. **`fzy#stop()`**<br/>
-Stop the process running in the focused terminal window and close the window.
+Opens a new terminal window with `{items}` passed as stdin to fzy. `{callback}`
+is a function that is invoked with the selected item.
 
-See `:help fzy-api` for more details.
+`{items}` can be a string or a list of strings. When a string is passed, the
+string is run as a command in `shell` and its output passed to fzy. If `{items}`
+is a list, on systems that support FIFOs, the items are passed through a FIFO to
+fzy. On systems that do not provide a `mkfifo` command, items are written to a
+temporary file on disk and then passed as `stdin` to fzy.
+
+The fzy executable as well as fzy options can be set through the `{options}`
+argument. See <kbd>:help fzy-api</kbd> for more details.
+
+####  `fzy#stop()`
+
+Stops the process running in the current terminal window and closes the window.
 
 ### Examples
 
-1. Fuzzy-select a colorscheme:
+Fuzzy-select a colorscheme:
 ```vim
 function! s:fzy_cb(item)
     execute 'colorscheme' a:item
@@ -59,8 +68,8 @@ endfunction
 command! -bar Color call s:setcolors()
 ```
 
-2. Find files under a specified directory using [find(1)][find] and edit the
-   selected file in the current window:
+Find files under a specified directory using [find(1)][find] and edit the
+selected file in the current window:
 ```vim
 function! s:fuzzyfind(dir) abort
     " Ignore .git directories
@@ -73,7 +82,7 @@ endfunction
 command! -bar -nargs=? -complete=dir Find
         \ call s:fuzzyfind(empty(<q-args>) ? getcwd() : <q-args>)
 ```
-See also `:help fzy-examples`.
+See <kbd>:help fzy-examples</kbd> for more examples.
 
 
 ## Installation
@@ -87,12 +96,12 @@ $ git clone https://github.com/bfrg/vim-fzy
 $ vim -u NONE -c "helptags vim-fzy/doc" -c q
 ```
 **Note:** The directory name `git-plugins` is arbitrary, you can pick any other
-name. For more details see `:help packages`.
+name. For more details see <kbd>:help packages</kbd>.
 
 #### Plugin Managers
 
 Assuming [vim-plug][plug] is your favorite plugin manager, add the following to
-your `.vimrc`:
+your `vimrc`:
 ```vim
 Plug 'bfrg/vim-fzy'
 ```
@@ -100,7 +109,7 @@ Plug 'bfrg/vim-fzy'
 
 ## License
 
-Distributed under the same terms as Vim itself. See `:help license`.
+Distributed under the same terms as Vim itself. See <kbd>:help license</kbd>.
 
 [fzy]: https://github.com/jhawthorn/fzy
 [find]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
