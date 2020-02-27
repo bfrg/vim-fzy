@@ -50,7 +50,7 @@ endfunction
 function! s:setcolors() abort
     let items = getcompletion('', 'color')
     return fzy#start(items, function('s:fzy_cb'), {
-            \ 'height': 10,
+            \ 'lines': 10,
             \ 'prompt': '▶ ',
             \ 'statusline': ':colorscheme {name}'
             \ })

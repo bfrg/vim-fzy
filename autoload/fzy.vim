@@ -3,18 +3,21 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Feb 11, 2020
+" Last Change:  Feb 27, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-let s:defaults = {'height': 11, 'prompt': '> ', 'statusline': 'fzy-term'}
+let s:defaults = {
+        \ 'exe': exepath('fzy'),
+        \ 'lines': 10,
+        \ 'statusline': 'fzy-term'
+        \ }
 
 function! s:error(msg) abort
     echohl ErrorMsg | echomsg a:msg | echohl None
-    return 0
 endfunction
 
 " Save and restore the view of the current window
@@ -78,13 +81,13 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ 'on_select_cb': a:on_select_cb
             \ }
 
-    let opts = a:0 ? a:1 : s:defaults
-    let rows = get(opts, 'height', s:defaults.height)
-    let fzy = printf('fzy --lines=%d --prompt=%s > %s',
-            \ (rows < 4 ? 3 : rows - 1),
-            \ shellescape(get(opts, 'prompt', s:defaults.prompt)),
-            \ ctx.selectfile
-            \ )
+    let opts = extend(a:0 ? a:1 : {}, s:defaults, 'keep')
+    let rows = get(opts, 'showinfo') ? (opts.lines + 2) : (opts.lines + 1)
+    let fzyopts = printf('--lines=%d', opts.lines < 4 ? 3 : opts.lines)
+            \ .. (has_key(opts, 'prompt') ? printf(' --prompt=%s', shellescape(opts.prompt)) : '')
+            \ .. (get(opts, 'showinfo') ? ' --show-info' : '')
+
+    let fzy = printf('%s %s > %s', opts.exe, fzyopts, ctx.selectfile)
 
     call s:windo(0)
     if type(a:items) ==  v:t_list
@@ -99,7 +102,7 @@ function! fzy#start(items, on_select_cb, ...) abort
             let fzybuf = s:term_open(shellcmd, rows, ctx)
         endif
     elseif type(a:items) == v:t_string
-        let shellcmd = a:items .. '|' .. fzy
+        let shellcmd = a:items .. ' | ' .. fzy
         let fzybuf = s:term_open(shellcmd, rows, ctx)
     else
         return s:error('fzy-E11: Only list and string supported')
@@ -107,7 +110,7 @@ function! fzy#start(items, on_select_cb, ...) abort
 
     call term_wait(fzybuf, 20)
     setlocal nonumber norelativenumber winfixheight filetype=fzy
-    let &l:statusline = get(opts, 'statusline', s:defaults.statusline)
+    let &l:statusline = opts.statusline
     call s:windo(1)
 
     return fzybuf

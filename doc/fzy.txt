@@ -35,12 +35,19 @@ fzy#start({items}, {callback} [, {options}])
             {options} is an optional |Dictionary| that can contain the
             following entries:
 
-            "height"        Height of the terminal window. The minimum height
-                            is 4 (limited by fzy)
-                            Default: 11
+            "exe"           Path to fzy executable.
+                            Default: value found in $PATH
 
-            "prompt"        fzy prompt.
+            "lines"         Specify how many lines of results to show. Minimum
+                            is 3 (limited by fzy)
+                            Default: 10
+
+            "prompt"        fzy input prompt.
                             Default: "> "
+
+            "showinfo"      Whether to show the selection info line. If set to
+                            1, fzy is invoked with the "--show-info" option.
+                            Default: 0
 
             "statusline"    Content of the 'statusline' for the terminal
                             window.
@@ -76,7 +83,8 @@ EXAMPLES                                                        *fzy-examples*
         " List of colorschemes
         let items = getcompletion('', 'color')
         return fzy#start(items, function('s:fzy_cb'), {
-                \ 'height': 10,
+                \ 'exe': expand('~/.local/bin/fzy'),
+                \ 'lines': 10,
                 \ 'prompt': '▶ ',
                 \ 'statusline': ':colorscheme {name}'
                 \ })
@@ -97,8 +105,9 @@ EXAMPLES                                                        *fzy-examples*
         " List of tags found in all tags files
         let items = uniq(sort(map(taglist('.*'), 'v:val.name')))
         return fzy#start(items, function('s:tags_cb'), {
-                \ 'height': 15,
+                \ 'lines': 15,
                 \ 'prompt': '▶ ',
+                \ 'showinfo': 1,
                 \ 'statusline': printf(':tjump [%d tags]', len(items))
                 \ })
     endfunction
@@ -114,8 +123,9 @@ EXAMPLES                                                        *fzy-examples*
         let items = printf('find %s -name .git -prune -o -type f -print',
                 \ a:dir)
         return fzy#start(items, {i -> execute('edit ' . fnameescape(i))}, {
-                \ 'height': 15,
+                \ 'lines': 15,
                 \ 'prompt': '▶ ',
+                \ 'showinfo': 1,
                 \ 'statusline': printf(':edit {fname} [directory: %s]', a:dir)
                 \ })
     endfunction
