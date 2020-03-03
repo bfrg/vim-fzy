@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Feb 27, 2020
+" Last Change:  Mar 3, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -43,29 +43,67 @@ function! s:windo(mode) abort
 endfunction
 
 function! s:exit_cb(ctx, job, status) abort
-    let winnr = winnr()
-    call win_gotoid(a:ctx.winid)
-    execute winnr .. 'close'
-    call s:windo(2)
+    if a:ctx.use_popup
+        close
+        redraw
+    else
+        let winnr = winnr()
+        call win_gotoid(a:ctx.winid)
+        execute winnr .. 'close'
+        call s:windo(2)
+        redraw
+    endif
+
     if filereadable(a:ctx.selectfile)
         try
             call a:ctx.on_select_cb(readfile(a:ctx.selectfile)[0])
         catch /^Vim\%((\a\+)\)\=:E684/
         endtry
     endif
+
     call delete(a:ctx.selectfile)
     if has_key(a:ctx, 'itemsfile')
         call delete(a:ctx.itemsfile)
     endif
 endfunction
 
-function! s:term_open(shellcmd, rows, exit_cb_ctx)
-    botright let bufnr = term_start([&shell, &shellcmdflag, a:shellcmd], {
+function! s:term_open(opts, ctx) abort
+    let cmd = [&shell, &shellcmdflag, a:opts.shellcmd]
+
+    let term_opts = {
             \ 'norestore': 1,
-            \ 'exit_cb': funcref('s:exit_cb', [a:exit_cb_ctx]),
+            \ 'exit_cb': funcref('s:exit_cb', [a:ctx]),
             \ 'term_name': 'fzy',
-            \ 'term_rows': a:rows
-            \ })
+            \ 'term_rows': a:opts.rows
+            \ }
+
+    if a:ctx.use_popup
+        let bufnr = term_start(cmd, extend(term_opts, {
+                \ 'hidden': 1,
+                \ 'term_finish': 'close'
+                \ }))
+
+        call extend(a:opts.popup, {
+                \ 'minwidth': &columns > 100 ? 100 : &columns-4,
+                \ 'padding': [0,1,0,1],
+                \ 'border': [],
+                \ 'borderchars': ['─', '│', '─', '│', '┌', '┐', '┘', '└']
+                \ }, 'keep')
+
+        " Stop terminal job when popup window is closed with mouse
+        call popup_create(bufnr, extend(a:opts.popup, {
+                \ 'minheight': a:opts.rows,
+                \ 'callback': {_,val -> val == -2 ? term_getjob(bufnr)->job_stop() : 0}
+                \ }))
+    else
+        call s:windo(0)
+        botright let bufnr = term_start(cmd, term_opts)
+        setlocal nonumber norelativenumber winfixheight
+        let &l:statusline = a:opts.statusline
+        call s:windo(1)
+    endif
+
+    call setbufvar(bufnr, '&filetype', 'fzy')
     return bufnr
 endfunction
 
@@ -78,40 +116,35 @@ function! fzy#start(items, on_select_cb, ...) abort
     let ctx = {
             \ 'winid': win_getid(),
             \ 'selectfile': tempname(),
-            \ 'on_select_cb': a:on_select_cb
+            \ 'on_select_cb': a:on_select_cb,
+            \ 'use_popup': has_key(a:0 ? a:1 : {}, 'popup') && has('patch-8.2.0204') ? 1 : 0
             \ }
 
-    let opts = extend(a:0 ? a:1 : {}, s:defaults, 'keep')
-    let rows = get(opts, 'showinfo') ? (opts.lines + 2) : (opts.lines + 1)
+    let opts = extend(a:0 ? copy(a:1) : {}, s:defaults, 'keep')
+    let opts.rows = get(opts, 'showinfo') ? (opts.lines + 2) : (opts.lines + 1)
     let fzyopts = printf('--lines=%d', opts.lines < 4 ? 3 : opts.lines)
             \ .. (has_key(opts, 'prompt') ? printf(' --prompt=%s', shellescape(opts.prompt)) : '')
             \ .. (get(opts, 'showinfo') ? ' --show-info' : '')
 
     let fzy = printf('%s %s > %s', opts.exe, fzyopts, ctx.selectfile)
 
-    call s:windo(0)
     if type(a:items) ==  v:t_list
         let ctx.itemsfile = tempname()
-        let shellcmd = fzy .. ' < ' .. ctx.itemsfile
+        let opts.shellcmd = fzy .. ' < ' .. ctx.itemsfile
         if executable('mkfifo')
             call system('mkfifo ' .. ctx.itemsfile)
-            let fzybuf = s:term_open(shellcmd, rows, ctx)
+            let fzybuf = s:term_open(opts, ctx)
             call writefile(a:items, ctx.itemsfile)
         else
             call writefile(a:items, ctx.itemsfile)
-            let fzybuf = s:term_open(shellcmd, rows, ctx)
+            let fzybuf = s:term_open(opts, ctx)
         endif
     elseif type(a:items) == v:t_string
-        let shellcmd = a:items .. ' | ' .. fzy
-        let fzybuf = s:term_open(shellcmd, rows, ctx)
+        let opts.shellcmd = a:items .. ' | ' .. fzy
+        let fzybuf = s:term_open(opts, ctx)
     else
         return s:error('fzy-E11: Only list and string supported')
     endif
-
-    call term_wait(fzybuf, 20)
-    setlocal nonumber norelativenumber winfixheight filetype=fzy
-    let &l:statusline = opts.statusline
-    call s:windo(1)
 
     return fzybuf
 endfunction
