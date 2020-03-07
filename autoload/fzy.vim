@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Mar 3, 2020
+" Last Change:  Mar 7, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -84,7 +84,7 @@ function! s:term_open(opts, ctx) abort
                 \ }))
 
         call extend(a:opts.popup, {
-                \ 'minwidth': &columns > 100 ? 100 : &columns-4,
+                \ 'minwidth': &columns > 80 ? 80 : &columns-4,
                 \ 'padding': [0,1,0,1],
                 \ 'border': [],
                 \ 'borderchars': ['─', '│', '─', '│', '┌', '┐', '┘', '└']
