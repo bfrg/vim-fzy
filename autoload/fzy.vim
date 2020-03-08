@@ -3,18 +3,12 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Mar 7, 2020
+" Last Change:  Mar 8, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
-
-let s:defaults = {
-        \ 'exe': exepath('fzy'),
-        \ 'lines': 10,
-        \ 'statusline': 'fzy-term'
-        \ }
 
 function! s:error(msg) abort
     echohl ErrorMsg | echomsg a:msg | echohl None
@@ -120,17 +114,28 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ 'use_popup': has_key(a:0 ? a:1 : {}, 'popup') && has('patch-8.2.0204') ? 1 : 0
             \ }
 
-    let opts = extend(a:0 ? copy(a:1) : {}, s:defaults, 'keep')
-    let opts.rows = get(opts, 'showinfo') ? (opts.lines + 2) : (opts.lines + 1)
-    let fzyopts = printf('--lines=%d', opts.lines < 4 ? 3 : opts.lines)
+    " extend() will modify the dict a:1, therefore we need to copy()
+    let opts = extend(a:0 ? copy(a:1) : {}, {
+            \ 'exe': exepath('fzy'),
+            \ 'lines': 10,
+            \ 'statusline': 'fzy-term'
+            \ }, 'keep')
+
+    " fzy doesn't allow less than 3 for the "--lines" option
+    let lines = opts.lines < 3 ? 3 : opts.lines
+
+    " Terminal height is number of "--lines" + prompt line + "--show-info" line
+    let opts.rows = get(opts, 'showinfo') ? lines + 2 : lines + 1
+
+    let fzyopts = printf('--lines=%d', lines)
             \ .. (has_key(opts, 'prompt') ? printf(' --prompt=%s', shellescape(opts.prompt)) : '')
             \ .. (get(opts, 'showinfo') ? ' --show-info' : '')
 
-    let fzy = printf('%s %s > %s', opts.exe, fzyopts, ctx.selectfile)
+    let fzycmd = printf('%s %s > %s', opts.exe, fzyopts, ctx.selectfile)
 
     if type(a:items) ==  v:t_list
         let ctx.itemsfile = tempname()
-        let opts.shellcmd = fzy .. ' < ' .. ctx.itemsfile
+        let opts.shellcmd = fzycmd .. ' < ' .. ctx.itemsfile
         if executable('mkfifo')
             call system('mkfifo ' .. ctx.itemsfile)
             let fzybuf = s:term_open(opts, ctx)
@@ -140,7 +145,7 @@ function! fzy#start(items, on_select_cb, ...) abort
             let fzybuf = s:term_open(opts, ctx)
         endif
     elseif type(a:items) == v:t_string
-        let opts.shellcmd = a:items .. ' | ' .. fzy
+        let opts.shellcmd = a:items .. ' | ' .. fzycmd
         let fzybuf = s:term_open(opts, ctx)
     else
         return s:error('fzy-E11: Only list and string supported')
