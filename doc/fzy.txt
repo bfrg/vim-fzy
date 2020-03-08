@@ -12,13 +12,18 @@ vim-fzy provides a simple API for running https://github.com/jhawthorn/fzy
 asynchronously in a |terminal-window| and invoking a callback function with
 the selected item.
 
+The terminal buffer can be displayed in either a normal window at the bottom
+of the screen or in a |popup| window (requires Vim 8.2.0204).
+
 ==============================================================================
 API                                                                  *fzy-api*
 
-                                             *fzy-E10* *fzy-E11* *fzy#start()*
+                                                                 *fzy#start()*
 fzy#start({items}, {callback} [, {options}])
-            Open a |terminal-window| and run fzy in it.
-
+            Run fzy asynchronously in a new |terminal-window|. By default the
+            fzy terminal buffer is opened in a normal window at the bottom of
+            the screen.
+                                                           *fzy-E10* *fzy-E11*
             {items} must be a |string| or a |list| of strings. When a string
             is passed, the string will be run as a command in 'shell' and its
             output piped to fzy. If {items} is a list, on systems that support
@@ -50,14 +55,38 @@ fzy#start({items}, {callback} [, {options}])
                             Default: 0
 
             "statusline"    Content of the 'statusline' for the terminal
-                            window.
+                            window. This entry is used only when fzy is
+                            displayed in a normal window. Popup windows do not
+                            have a statusline.
                             Default: "fzy-term"
 
-            Returns the buffer number of the terminal window. If opening the
-            window fails zero is returned.
+            "popup"         When specified, fzy is opened in a popup window
+                            (requires Vim 8.2.0204). "popup" must be a
+                            dictionary, its keys are similar to what is passed
+                            to |popup_create()|. The following keys can be
+                            used to change the appearance and position of the
+                            popup window:
+                            "line", "pos", "col", "minwidth", "title", "drag",
+                            "resize", "close", "highlight", "padding",
+                            "border", "borderhighlight", "borderchars",
+                            "zindex". See |popup-usage| for more details.
+                            Default: >
+                              {
+                                'padding': [0,1,0,1],
+                                'border': [],
+                                'borderchars': ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
+                                'minwidth': 80
+                              }
+<
+            Note: The height of the popup window is set automatically based on
+            the "lines", "padding" and "border" entries.
 
-            The terminal window will always appear at the bottom and occupy
-            the full width of the Vim window.
+            When no "popup" entry is specified in {options}, the terminal
+            window will appear at the bottom and occupy the full width of the
+            Vim window.
+
+            The function returns the buffer number of the terminal window. If
+            opening the window fails zero is returned.
 
 fzy#stop()                                              *fzy-E12* *fzy#stop()*
             Stop a running fzy process and close the corresponding terminal
