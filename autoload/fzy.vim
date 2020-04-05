@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Mar 8, 2020
+" Last Change:  Apr 5, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -21,12 +21,12 @@ endfunction
 "   2 - restore old view and cleanup
 function! s:window_state(mode) abort
     if a:mode == 0
-        let w:winview = winsaveview()
-    elseif a:mode == 1 && exists('w:winview')
-        call winrestview(w:winview)
-    elseif a:mode == 2 && exists('w:winview')
-        call winrestview(w:winview)
-        unlet w:winview
+        let w:fzy_winview = winsaveview()
+    elseif a:mode == 1 && exists('w:fzy_winview')
+        call winrestview(w:fzy_winview)
+    elseif a:mode == 2 && exists('w:fzy_winview')
+        call winrestview(w:fzy_winview)
+        unlet w:fzy_winview
     endif
 endfunction
 
