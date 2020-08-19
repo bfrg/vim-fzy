@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Aug 19, 2020
+" Last Change:  Aug 20, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -70,6 +70,10 @@ function s:term_open(opts, ctx) abort
             \ 'term_name': 'fzy',
             \ 'term_rows': a:opts.rows
             \ }
+
+    if has_key(a:opts, 'term_highlight') && has('patch-8.2.0455')
+        call extend(term_opts, {'term_highlight': a:opts.term_highlight})
+    endif
 
     if a:ctx.use_popup
         let bufnr = term_start(cmd, extend(term_opts, {

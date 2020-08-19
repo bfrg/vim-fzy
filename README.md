@@ -46,29 +46,29 @@ disk and then passed as stdin to fzy.
 
 `{options}` is an optional dictionary that can contain the following entries:
 
-| Key          | Description                                           | Default                |
-| ------------ | ----------------------------------------------------- | ---------------------- |
-| `exe`        | Path to fzy executable.                               | value found in `$PATH` |
-| `lines`      | How many lines of results to show.                    | `10`                   |
-| `prompt`     | fzy input prompt.                                     | `'> '`                 |
-| `showinfo`   | Whether to invoke fzy with `--show-info` option.      | `0`                    |
-| `statusline` | Content for the `statusline` of the terminal window.  | `'fzy-term'`           |
-| `popup`      | Open fzy in a popup window.                           | see below              |
+| Key              | Description                                           | Default                |
+| ---------------- | ----------------------------------------------------- | ---------------------- |
+| `exe`            | Path to fzy executable.                               | value found in `$PATH` |
+| `lines`          | How many lines of results to show.                    | `10`                   |
+| `prompt`         | fzy input prompt.                                     | `'> '`                 |
+| `showinfo`       | Whether to invoke fzy with `--show-info` option.      | `0`                    |
+| `statusline`     | Content for the `statusline` of the terminal window.  | `'fzy-term'`           |
+| `term_highlight` | Highlight group for the terminal window.              | `'Terminal'`           |
+| `popup`          | Open fzy in a popup window.                           | see below              |
 
 The `popup` entry must be a dictionary that can contain the following keys:
 
 | Key               | Description                                                                  | Default                                    |
 | ----------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| `highlight`       | Highlight group for popup window padding and border.¹                        | `'Pmenu'`                                  |
+| `highlight`       | Highlight group for popup window padding and border.                         | `'Pmenu'`                                  |
 | `padding`         | List with numbers defining padding between popup window and its border.      | `[0, 1, 0, 1]`                             |
 | `border`          | List with numbers (0 or 1) specifying whether to draw a popup window border. | `[1, 1, 1, 1]`                             |
 | `borderchars`     | List with characters used for drawing the border.                            | `['═', '║', '═', '║', '╔', '╗', '╝', '╚']` |
-| `borderhighlight` | List with highlight group names for drawing the border.²                     | `['Pmenu']`                                |
+| `borderhighlight` | List with highlight group names for drawing the border.¹                     | `['Pmenu']`                                |
 | `minwidth`        | Minimum width of popup window.                                               | `80`                                       |
 | `title`           | Title of popup window.                                                       | `''`                                       |
 
-¹The text inside the popup window is highlighted with `hl-Terminal`.</br>
-²When one list item is specified it is used on all sides.
+¹When only one item is specified it is used on all four sides.
 
 For default options, set the `popup` entry to an empty dictionary.
 

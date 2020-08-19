@@ -20,47 +20,50 @@ API                                                                  *fzy-api*
 
                                                                  *fzy#start()*
 fzy#start({items}, {callback} [, {options}])
-            Run fzy asynchronously in a new |terminal-window|. By default the
-            fzy terminal buffer is opened in a normal window at the bottom of
-            the screen.
+        Run fzy asynchronously in a new |terminal-window|. By default the fzy
+        terminal buffer is opened in a normal window at the bottom of the
+        screen.
                                                            *fzy-E10* *fzy-E11*
-            {items} must be a |string| or a |list| of strings. When a string
-            is passed, the string will be run as a command in 'shell' and its
-            output piped to fzy. If {items} is a list, on systems that support
-            FIFOs (named pipes), the items are written to a FIFO and passed as
-            stdin to fzy. On all other systems that do not provide an "mkfifo"
-            command, the items are instead written to a temporary file on
-            disk before passed to fzy.
+        {items} must be a |string| or a |list| of strings. When a string is
+        passed, the string will be run as a command in 'shell' and its output
+        piped to fzy. If {items} is a list, on systems that support FIFOs
+        (named pipes), the items are written to a FIFO and passed as stdin to
+        fzy. On all other systems that do not provide an "mkfifo" command, the
+        items are instead written to a temporary file on disk before passed to
+        fzy.
 
-            {callback} is a |Funcref| that is invoked after an item has been
-            selected. The function is called after the terminal window is
-            closed. The callback function is called with one argument, the
-            selected item. See also |fzy-examples| below.
+        {callback} is a |Funcref| that is invoked after an item has been
+        selected. The function is called after the terminal window is closed.
+        The callback function is called with one argument, the selected item.
+        See also |fzy-examples| below.
 
-            {options} is an optional |Dictionary| that can contain the
-            following entries:
+        {options} is an optional |Dictionary| that can contain the following
+        entries:
 
-            "exe"           Path to fzy executable.
+        "exe"               Path to fzy executable.
                             Default: value found in $PATH
 
-            "lines"         Specify how many lines of results to show. Minimum
+        "lines"             Specify how many lines of results to show. Minimum
                             is 3 (limited by fzy)
                             Default: 10
 
-            "prompt"        fzy input prompt.
+        "prompt"            fzy input prompt.
                             Default: "> "
 
-            "showinfo"      Whether to show the selection info line. If set to
+        "showinfo"          Whether to show the selection info line. If set to
                             1, fzy is invoked with the "--show-info" option.
                             Default: 0
 
-            "statusline"    Content of the 'statusline' for the terminal
+        "statusline"        Content of the 'statusline' for the terminal
                             window. This entry is used only when fzy is
                             displayed in a normal window. Popup windows do not
                             have a statusline.
                             Default: "fzy-term"
 
-            "popup"         When specified, fzy is opened in a popup window
+        "term_highlight"    Highlight group for the terminal window.
+                            Default: |hl-Terminal|
+
+        "popup"             When specified, fzy is opened in a popup window
                             (requires Vim 8.2.0204). "popup" must be a
                             dictionary, its keys are similar to what is passed
                             to |popup_create()|. The following keys can be
@@ -77,22 +80,21 @@ fzy#start({items}, {callback} [, {options}])
                                 'minwidth': 80
                               }
 <
-            Note: The height of the popup window is set automatically based on
-            the "lines", "padding" and "border" entries.
+        Note: The height of the popup window is set automatically based on
+        the "lines", "padding" and "border" entries.
 
-            When no "popup" entry is specified in {options}, the terminal
-            window will appear at the bottom and occupy the full width of the
-            Vim window.
+        When no "popup" entry is specified in {options}, the terminal
+        window will appear at the bottom and occupy the full width of the
+        Vim window.
 
-            The function returns the buffer number of the terminal window. If
-            opening the window fails zero is returned.
+        The function returns the buffer number of the terminal window. If
+        opening the window fails zero is returned.
 
 fzy#stop()                                              *fzy-E12* *fzy#stop()*
-            Stop a running fzy process and close the corresponding terminal
-            window. The function must be called with focus on a fzy terminal
-            window. If the buffer is not a terminal window, an error is
-            emitted.
-            The result is a number. See |job_stop()| for details.
+        Stop a running fzy process and close the corresponding terminal
+        window. The function must be called with focus on a fzy terminal
+        window. If the buffer is not a terminal window, an error is emitted.
+        The result is a number. See |job_stop()| for details.
 
                                                                       *ft-fzy*
 The |filetype| of the terminal buffer where fzy is running is set to fzy.
