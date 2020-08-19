@@ -3,14 +3,14 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Apr 5, 2020
+" Last Change:  Aug 19, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-function! s:error(msg) abort
+function s:error(msg) abort
     echohl ErrorMsg | echomsg a:msg | echohl None
 endfunction
 
@@ -19,7 +19,7 @@ endfunction
 "   0 - save current view
 "   1 - restore old view
 "   2 - restore old view and cleanup
-function! s:window_state(mode) abort
+function s:window_state(mode) abort
     if a:mode == 0
         let w:fzy_winview = winsaveview()
     elseif a:mode == 1 && exists('w:fzy_winview')
@@ -30,13 +30,15 @@ function! s:window_state(mode) abort
     endif
 endfunction
 
-function! s:windo(mode) abort
+function s:windo(mode) abort
     for winnr in range(1, winnr('$'))
         call win_execute(win_getid(winnr), printf('call s:window_state(%d)', a:mode))
     endfor
 endfunction
 
-function! s:exit_cb(ctx, job, status) abort
+function s:exit_cb(ctx, job, status) abort
+    " We need to redraw the screen in case a prompt like :tselect shows up after
+    " selecting an item. If not redrawn, the popup window remains visible
     if a:ctx.use_popup
         close
         redraw
@@ -45,6 +47,8 @@ function! s:exit_cb(ctx, job, status) abort
         call win_gotoid(a:ctx.winid)
         execute winnr .. 'close'
         call s:windo(2)
+        " Must be called after s:windo(2) or screen flickers when fzy is closed
+        " with CTRL-C
         redraw
     endif
 
@@ -61,7 +65,7 @@ function! s:exit_cb(ctx, job, status) abort
     endif
 endfunction
 
-function! s:term_open(opts, ctx) abort
+function s:term_open(opts, ctx) abort
     let cmd = [&shell, &shellcmdflag, a:opts.shellcmd]
 
     let term_opts = {
@@ -102,7 +106,7 @@ function! s:term_open(opts, ctx) abort
 endfunction
 
 " See issue: https://github.com/vim/vim/issues/3522
-function! fzy#start(items, on_select_cb, ...) abort
+function fzy#start(items, on_select_cb, ...) abort
     if empty(a:items)
         return s:error('fzy-E10: No items passed')
     endif
@@ -114,17 +118,13 @@ function! fzy#start(items, on_select_cb, ...) abort
             \ 'use_popup': has_key(a:0 ? a:1 : {}, 'popup') && has('patch-8.2.0204') ? 1 : 0
             \ }
 
-    " extend() will modify the dict a:1, therefore we need to copy()
     let opts = extend(a:0 ? copy(a:1) : {}, {
             \ 'exe': exepath('fzy'),
             \ 'lines': 10,
             \ 'statusline': 'fzy-term'
             \ }, 'keep')
 
-    " fzy doesn't allow less than 3 for the "--lines" option
     let lines = opts.lines < 3 ? 3 : opts.lines
-
-    " Terminal height is number of "--lines" + prompt line + "--show-info" line
     let opts.rows = get(opts, 'showinfo') ? lines + 2 : lines + 1
 
     let fzyopts = printf('--lines=%d', lines)
@@ -154,7 +154,7 @@ function! fzy#start(items, on_select_cb, ...) abort
     return fzybuf
 endfunction
 
-function! fzy#stop() abort
+function fzy#stop() abort
     if &buftype !=# 'terminal' || bufname('%') !=# 'fzy'
         return s:error('fzy-E12: Not a fzy terminal window')
     endif
