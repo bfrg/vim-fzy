@@ -15,10 +15,6 @@ function s:error(msg) abort
 endfunction
 
 " Save and restore the view of the current window
-" mode:
-"   0 - save current view
-"   1 - restore old view
-"   2 - restore old view and cleanup
 function s:window_state(mode) abort
     if a:mode == 0
         let w:fzy_winview = winsaveview()
@@ -37,8 +33,8 @@ function s:windo(mode) abort
 endfunction
 
 function s:exit_cb(ctx, job, status) abort
-    " We need to redraw the screen in case a prompt like :tselect shows up after
-    " selecting an item. If not redrawn, the popup window remains visible
+    " Redraw screen in case a prompt like :tselect shows up after selecting an
+    " item. If not redrawn, popup window remains visible
     if a:ctx.use_popup
         close
         redraw
@@ -82,16 +78,15 @@ function s:term_open(opts, ctx) abort
                 \ }))
 
         call extend(a:opts.popup, {
-                \ 'minwidth': &columns > 80 ? 80 : &columns-4,
-                \ 'padding': [0,1,0,1],
-                \ 'border': [],
-                \ 'borderchars': ['─', '│', '─', '│', '┌', '┐', '┘', '└']
+                \ 'minwidth': &columns > 80 ? 80 : &columns - 4,
+                \ 'padding': [0, 1, 0, 1],
+                \ 'border': []
                 \ }, 'keep')
 
         " Stop terminal job when popup window is closed with mouse
         call popup_create(bufnr, extend(a:opts.popup, {
                 \ 'minheight': a:opts.rows,
-                \ 'callback': {_,val -> val == -2 ? term_getjob(bufnr)->job_stop() : 0}
+                \ 'callback': {_,i -> i == -2 ? term_getjob(bufnr)->job_stop() : 0}
                 \ }))
     else
         call s:windo(0)
@@ -158,7 +153,7 @@ function fzy#stop() abort
     if &buftype !=# 'terminal' || bufname('%') !=# 'fzy'
         return s:error('fzy-E12: Not a fzy terminal window')
     endif
-    return job_stop(term_getjob(bufnr('%')))
+    return bufnr('%')->term_getjob()->job_stop()
 endfunction
 
 let &cpoptions = s:save_cpo

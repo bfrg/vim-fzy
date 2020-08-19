@@ -12,7 +12,7 @@ vim-fzy provides a simple API for running https://github.com/jhawthorn/fzy
 asynchronously in a |terminal-window| and invoking a callback function with
 the selected item.
 
-The terminal buffer can be displayed in either a normal window at the bottom
+The terminal buffer can be displayed either in a normal window at the bottom
 of the screen or in a |popup| window (requires Vim 8.2.0204).
 
 ==============================================================================
@@ -74,7 +74,6 @@ fzy#start({items}, {callback} [, {options}])
                               {
                                 'padding': [0,1,0,1],
                                 'border': [],
-                                'borderchars': ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
                                 'minwidth': 80
                               }
 <
@@ -111,16 +110,16 @@ EXAMPLES                                                        *fzy-examples*
     function! s:setcolors() abort
         " List of colorschemes
         let items = getcompletion('', 'color')
-        return fzy#start(items, function('s:fzy_cb'), {
+        return fzy#start(items, funcref('s:fzy_cb'), {
                 \ 'exe': expand('~/.local/bin/fzy'),
-                \ 'lines': 10,
+                \ 'lines': 15,
                 \ 'prompt': '▶ ',
                 \ 'statusline': ':colorscheme {name}'
                 \ })
     endfunction
 
-    command! -bar Color call s:setcolors()
-    nnoremap <leader>c :<c-u>call <sid>setcolors()<cr>
+    command! Color call s:setcolors()
+    nnoremap <Leader>c :<C-u>call <SID>setcolors()<CR>
 <
 
 2. List all |tags| and jump to the selected tag in the current window:

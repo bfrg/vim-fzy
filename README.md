@@ -30,7 +30,7 @@ well as the [examples](#examples) section.
 
 ## API Documentation
 
-**Note:** This documentation can also be found under <kbd>:help fzy-api</kbd>.
+This documentation can also be found under <kbd>:help fzy-api</kbd>.
 
 ```vim
 fzy#start({items}, {callback} [, {options}])
@@ -52,28 +52,25 @@ disk and then passed as stdin to fzy.
 | `lines`      | How many lines of results to show.                    | `10`                   |
 | `prompt`     | fzy input prompt.                                     | `'> '`                 |
 | `showinfo`   | Whether to invoke fzy with `--show-info` option.      | `0`                    |
-| `statusline` | Content for the `statusline` of the terminal window.¹ | `'fzy-term'`           |
+| `statusline` | Content for the `statusline` of the terminal window.  | `'fzy-term'`           |
 | `popup`      | Open fzy in a popup window.                           | see below              |
-
-¹Ignored when fzy is opened in a popup window.
 
 The `popup` entry must be a dictionary that can contain the following keys:
 
 | Key               | Description                                                                  | Default                                    |
 | ----------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| `highlight`       | Highlight group for popup window padding and border.²                        | `'Pmenu'`                                  |
-| `padding`         | List with numbers defining padding between popup window and its border.      | `[0,1,0,1]`                                |
-| `border`          | List with numbers (0 or 1) specifying whether to draw a popup window border. | `[1,1,1,1]`                                |
-| `borderchars`     | List with characters used for drawing the border.³                           | `['─', '│', '─', '│', '┌', '┐', '┘', '└']` |
-| `borderhighlight` | List with highlight group names for drawing the border.³                     | `['Pmenu']`                                |
+| `highlight`       | Highlight group for popup window padding and border.¹                        | `'Pmenu'`                                  |
+| `padding`         | List with numbers defining padding between popup window and its border.      | `[0, 1, 0, 1]`                             |
+| `border`          | List with numbers (0 or 1) specifying whether to draw a popup window border. | `[1, 1, 1, 1]`                             |
+| `borderchars`     | List with characters used for drawing the border.                            | `['═', '║', '═', '║', '╔', '╗', '╝', '╚']` |
+| `borderhighlight` | List with highlight group names for drawing the border.²                     | `['Pmenu']`                                |
 | `minwidth`        | Minimum width of popup window.                                               | `80`                                       |
 | `title`           | Title of popup window.                                                       | `''`                                       |
 
-²The text inside the popup window is highlighted with `hl-Terminal`.</br>
-³When one list item is specified it is used on all sides.
+¹The text inside the popup window is highlighted with `hl-Terminal`.</br>
+²When one list item is specified it is used on all sides.
 
-If you want to use the default options, set the `popup` entry to an empty
-dictionary.
+For default options, set the `popup` entry to an empty dictionary.
 
 The popup options are similar to what is passed to `popup_create()`. Other
 useful options are `pos`, `line`, `col`, `drag`, `close`, `resize` and `zindex`.
