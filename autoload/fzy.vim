@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Aug 20, 2020
+" Last Change:  Aug 23, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -134,6 +134,13 @@ function fzy#start(items, on_select_cb, ...) abort
 
     if type(a:items) ==  v:t_list
         let ctx.itemsfile = tempname()
+
+        " Automatically resize terminal window
+        if len(a:items) < lines
+            let lines = len(a:items) < 3 ? 3 : len(a:items)
+            let opts.rows = get(opts, 'showinfo') ? lines + 2 : lines + 1
+        endif
+
         let opts.shellcmd = fzycmd .. ' < ' .. ctx.itemsfile
         if executable('mkfifo')
             call system('mkfifo ' .. ctx.itemsfile)
