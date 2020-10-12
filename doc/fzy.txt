@@ -57,18 +57,23 @@ fzy#start({items}, {callback} [, {options}])
         "statusline"        Content of the 'statusline' for the terminal
                             window. This entry is used only when fzy is
                             displayed in a normal window. Popup windows do not
-                            have a statusline.
+                            have a statusline, use the "title" entry instead.
                             Default: "fzy-term"
 
-        "term_highlight"    Highlight group for the terminal window.
+        "term_highlight"    Highlight group for the terminal window. This
+                            requires Vim >= 8.2.0455.
                             Default: |hl-Terminal|
 
-        "popup"             When specified, fzy is opened in a popup window
-                            (requires Vim 8.2.0204). "popup" must be a
-                            dictionary, its keys are similar to what is passed
-                            to |popup_create()|. The following keys can be
-                            used to change the appearance and position of the
-                            popup window:
+        "popupwin"          If true, fzy is opened in a |popup-terminal|. This
+                            requires Vim >= 8.2.0204. The appearance of the
+                            popup window can be specified through the "popup"
+                            entry (see below).
+                            Default: |v:false|
+
+        "popup"             Dictionary for setting popup options. The keys are
+                            similar to what is passed to |popup_create()|. The
+                            following keys can be used to change the
+                            appearance and position of the popup window:
                             "line", "pos", "col", "minwidth", "title", "drag",
                             "resize", "close", "highlight", "padding",
                             "border", "borderhighlight", "borderchars",
@@ -83,9 +88,8 @@ fzy#start({items}, {callback} [, {options}])
         Note: The height of the popup window is set automatically based on
         the "lines", "padding" and "border" entries.
 
-        When no "popup" entry is specified in {options}, the terminal
-        window will appear at the bottom and occupy the full width of the
-        Vim window.
+        When "popupwin" is set to |v:false|, the terminal window is displayed
+        at the bottom and occupy the full width of the Vim window.
 
         The function returns the buffer number of the terminal window. If
         opening the window fails zero is returned.

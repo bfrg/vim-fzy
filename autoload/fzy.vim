@@ -3,15 +3,15 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Aug 23, 2020
+" Last Change:  Oct 12, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-function s:error(msg) abort
-    echohl ErrorMsg | echomsg a:msg | echohl None
+function s:error(...)
+    echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
 endfunction
 
 " Save and restore the view of the current window
@@ -35,7 +35,7 @@ endfunction
 function s:exit_cb(ctx, job, status) abort
     " Redraw screen in case a prompt like :tselect shows up after selecting an
     " item. If not redrawn, popup window remains visible
-    if a:ctx.use_popup
+    if a:ctx.popupwin
         close
         redraw
     else
@@ -75,7 +75,7 @@ function s:term_open(opts, ctx) abort
         call extend(term_opts, {'term_highlight': a:opts.term_highlight})
     endif
 
-    if a:ctx.use_popup
+    if a:ctx.popupwin
         let bufnr = term_start(cmd, extend(term_opts, {
                 \ 'hidden': 1,
                 \ 'term_finish': 'close'
@@ -114,23 +114,28 @@ function fzy#start(items, on_select_cb, ...) abort
             \ 'winid': win_getid(),
             \ 'selectfile': tempname(),
             \ 'on_select_cb': a:on_select_cb,
-            \ 'use_popup': has_key(a:0 ? a:1 : {}, 'popup') && has('patch-8.2.0204') ? 1 : 0
+            \ 'popupwin': get(a:0 ? a:1 : {}, 'popupwin') && has('patch-8.2.0204') ? 1 : 0
             \ }
 
     let opts = extend(a:0 ? copy(a:1) : {}, {
             \ 'exe': exepath('fzy'),
+            \ 'prompt': '> ',
             \ 'lines': 10,
+            \ 'showinfo': 0,
+            \ 'popup': {},
             \ 'statusline': 'fzy-term'
             \ }, 'keep')
 
     let lines = opts.lines < 3 ? 3 : opts.lines
-    let opts.rows = get(opts, 'showinfo') ? lines + 2 : lines + 1
+    let opts.rows = opts.showinfo ? lines + 2 : lines + 1
 
-    let fzyopts = printf('--lines=%d', lines)
-            \ .. (has_key(opts, 'prompt') ? printf(' --prompt=%s', shellescape(opts.prompt)) : '')
-            \ .. (get(opts, 'showinfo') ? ' --show-info' : '')
-
-    let fzycmd = printf('%s %s > %s', opts.exe, fzyopts, ctx.selectfile)
+    const fzycmd = printf('%s --lines=%d --prompt=%s %s > %s',
+            \ opts.exe,
+            \ lines,
+            \ shellescape(opts.prompt),
+            \ opts.showinfo ? '--show-info' : '',
+            \ ctx.selectfile
+            \ )
 
     if type(a:items) ==  v:t_list
         let ctx.itemsfile = tempname()

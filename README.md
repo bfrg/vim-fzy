@@ -54,7 +54,8 @@ disk and then passed as stdin to fzy.
 | `showinfo`       | Whether to invoke fzy with `--show-info` option.      | `0`                    |
 | `statusline`     | Content for the `statusline` of the terminal window.  | `'fzy-term'`           |
 | `term_highlight` | Highlight group for the terminal window.              | `'Terminal'`           |
-| `popup`          | Open fzy in a popup window.                           | see below              |
+| `popupwin`       | Display fzy in a popup terminal.                      | `v:false`              |
+| `popup`          | Popup window options. Entry must be a dictionary.     | see below              |
 
 The `popup` entry must be a dictionary that can contain the following keys:
 
@@ -70,8 +71,6 @@ The `popup` entry must be a dictionary that can contain the following keys:
 
 ¹When only one item is specified it is used on all four sides.
 
-For default options, set the `popup` entry to an empty dictionary.
-
 The popup options are similar to what is passed to `popup_create()`. Other
 useful options are `pos`, `line`, `col`, `drag`, `close`, `resize` and `zindex`.
 See <kbd>:help popup\_create-arguments</kbd> for more details.
@@ -82,8 +81,8 @@ be changed through the `pos`, `line` and `col` entries.
 The height of the popup window is set automatically using the `lines`, `padding`
 and `border` entries.
 
-When no `popup` entry is specified in `{options}`, the terminal window will
-appear at the bottom of the screen and occupy the full width of the Vim window.
+When `popupwin` is set to `v:false`, the terminal window will appear at the
+bottom of the screen and occupy the full width of the Vim window.
 
 
 ## Examples
