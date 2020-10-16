@@ -135,7 +135,7 @@ More examples can be found under `:help fzy-config-examples`.
 Writing your own commands that will invoke fzy is not very hard. Internally, the
 above commands call the `fzy#start()` function to pass the items to fzy in a
 terminal window. The function is thoroughly documented under `:help fzy-api`.
-Examples can be found under `:help fzy-examples`.
+Examples can be found under `:help fzy-api-examples`.
 
 
 ## Installation

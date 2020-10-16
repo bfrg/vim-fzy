@@ -257,7 +257,7 @@ fzy#start({items}, {callback} [, {options}])
         {callback} is a |Funcref| that is invoked after an item has been
         selected. The function is called after the terminal window is closed.
         The callback function is called with one argument, the selected item.
-        See also |fzy-examples| below.
+        See |fzy-api-examples| below.
 
         {options} is an optional |Dictionary| that can contain the following
         entries:
