@@ -183,6 +183,10 @@ function fzy#start(items, on_select_cb, ...) abort
             \ 'statusline': 'fzy-term'
             \ }, 'keep')
 
+    if !executable(opts.exe)
+        return s:error('fzy: executable "%s" not found', opts.exe)
+    endif
+
     let lines = opts.lines < 3 ? 3 : opts.lines
     let opts.rows = opts.showinfo ? lines + 2 : lines + 1
 
