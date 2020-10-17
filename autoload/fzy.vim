@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Oct 13, 2020
+" Last Change:  Oct 17, 2020
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -97,6 +97,10 @@ function s:term_open(opts, ctx) abort
     endif
 
     if a:ctx.popupwin
+        if !has_key(a:opts, 'term_highlight') && has('patch-8.2.0455')
+            call extend(term_opts, {'term_highlight': 'Pmenu'})
+        endif
+
         let bufnr = term_start(cmd, extend(term_opts, {
                 \ 'hidden': 1,
                 \ 'term_finish': 'close'

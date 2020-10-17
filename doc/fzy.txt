@@ -284,7 +284,8 @@ fzy#start({items}, {callback} [, {options}])
 
         "term_highlight"    Highlight group for the terminal window. This
                             requires Vim >= 8.2.0455.
-                            Default: |hl-Terminal|
+                            Default: |hl-Terminal| (normal window), |hl-Pmenu|
+                            (popup window)
 
         "popupwin"          If true, fzy is opened in a |popup-terminal|. This
                             requires Vim >= 8.2.0204. The appearance of the
