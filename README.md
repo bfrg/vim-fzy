@@ -40,22 +40,11 @@ of the screen or in a popup window (requires Vim `>= 8.2.0204`).
 the current working directory. Environment variables can be passed, for example,
 `:FzyFind $VIMRUNTIME`.
 
-Each command has a related command that opens the selected item in a new split:
-
-| Command               | Description                                                              |
-| --------------------- | ------------------------------------------------------------------------ |
-| `:FzyFindSplit [dir]` | Same as `:FzyFind`, but edit the selected file in a new split.           |
-| `:FzyBufferSplit`     | Same as `:FzyBuffer`, but edit the selected buffer in a new split.       |
-| `:FzyArgsSplit`       | Same as `:FzyArgs`, but edit the selected file in a new split.           |
-| `:FzyLargsSplit`      | Same as `:FzyLargs`, but edit the selected file in a new split.          |
-| `:FzyOldfilesSplit`   | Same as `:FzyOldfiles`, but edit the selected file in a new split.       |
-| `:FzyTjumpSplit`      | Same as `:FzyTjump`, but jump to the selected tag in a new split.        |
-| `:FzyMarksSplit`      | Same as `:FzyMarks`, but jump to the selected mark in a new split.       |
-
-These commands accept a **command modifier**. For example, to open a buffer in a
-new vertical split, run `:vert FzyBufferSplit`. `:tab FzyBufferSplit` will open
-the selected buffer in a new tab. For a full list of supported command
-modifiers, see `:help fzy-commands-split`.
+Each command has a related command that opens the selected item in a new split,
+like `:FzyBufferSplit`. These commands accept a **command modifier**. For
+example, to open a buffer in a new vertical split, run `:vert FzyBufferSplit`,
+`:tab FzyBufferSplit` will open the selected buffer in a new tab. For a full
+list of supported command modifiers, see `:help fzy-commands-split`.
 
 
 ## Configuration
@@ -63,15 +52,15 @@ modifiers, see `:help fzy-commands-split`.
 Options can be passed to fzy through the dictionary `g:fzy`. The following
 entries are supported:
 
-| Entry            | Description                                                                  | Default      |
-| ---------------- | ---------------------------------------------------------------------------- | ------------ |
-| `lines`          | Specify how many lines of results to show. This sets fzy's `--lines` option. | `10`         |
-| `prompt`         | Set the fzy input prompt.                                                    | `'▶ '`       |
-| `showinfo`       | If true, fzy is invoked with the `--show-info` option.                       | `v:false`    |
-| `term_highlight` | Highlight group for the terminal window.                                     | `'Terminal'` |
-| `popupwin`       | Display fzy in a popup terminal.                                             | `v:false`    |
-| `popup`          | Popup window options (dictionary).                                           | see below    |
-| `findcmd`        | File-search command (string).                                                | see below    |
+| Entry            | Description                                                                  | Default                            |
+| ---------------- | ---------------------------------------------------------------------------- | ---------------------------------- |
+| `lines`          | Specify how many lines of results to show. This sets fzy's `--lines` option. | `10`                               |
+| `prompt`         | Set the fzy input prompt.                                                    | `'▶ '`                             |
+| `showinfo`       | If true, fzy is invoked with the `--show-info` option.                       | `v:false`                          |
+| `term_highlight` | Highlight group for the terminal window.                                     | `'Terminal'`                       |
+| `popupwin`       | Display fzy in a popup terminal.                                             | `v:false`                          |
+| `popup`          | Popup window options (dictionary).                                           | [see below](#popup-window-options) |
+| `findcmd`        | File-search command (string).                                                | [see below](#find-command)         |
 
 When `popupwin` is set to `v:false`, the terminal window is opened at the bottom
 of the screen and will occupy the full width of the Vim window.
@@ -134,32 +123,21 @@ More examples can be found under `:help fzy-config-examples`.
 
 Writing your own commands that will invoke fzy is not very hard. Internally, the
 above commands call the `fzy#start()` function to pass the items to fzy in a
-terminal window. The function is thoroughly documented under `:help fzy-api`.
-Examples can be found under `:help fzy-api-examples`.
+terminal window. The function is thoroughly documented in `:help fzy-api`.
+Examples can be found in `:help fzy-api-examples`.
 
 
 ## Installation
-
-#### Manual Installation
 
 Run the following commands in your terminal:
 ```bash
 $ cd ~/.vim/pack/git-plugins/start
 $ git clone https://github.com/bfrg/vim-fzy
-$ vim -u NONE -c "helptags vim-fzy/doc" -c q
+$ vim -u NONE -c 'helptags vim-fzy/doc | quit'
 ```
 **Note:** The directory name `git-plugins` is arbitrary, you can pick any other
-name. For more details see `:help packages`.
-
-#### Plugin Managers
-
-Assuming [vim-plug][plug] is your favorite plugin manager, add the following to
-your `vimrc`:
-```vim
-if has('patch-8.1.1828')
-    Plug 'bfrg/vim-fzy'
-endif
-```
+name. For more details see `:help packages`. Alternatively, use your favorite
+plugin manager.
 
 
 ## License
@@ -169,4 +147,3 @@ Distributed under the same terms as Vim itself. See `:help license`.
 [fzy]: https://github.com/jhawthorn/fzy
 [find]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/find.html
 [cut]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cut.html
-[plug]: https://github.com/junegunn/vim-plug
