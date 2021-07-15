@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Oct 17, 2020
+" Last Change:  Jul 15, 2021
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -120,7 +120,7 @@ function s:term_open(opts, ctx) abort
     else
         call s:windo(0)
         botright let bufnr = term_start(cmd, term_opts)
-        setlocal nonumber norelativenumber winfixheight
+        setlocal nonumber norelativenumber winfixheight bufhidden=wipe
         let &l:statusline = a:opts.statusline
         call s:windo(1)
     endif
