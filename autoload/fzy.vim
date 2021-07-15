@@ -161,6 +161,17 @@ function s:marks_cb(split_cmd, bang, item) abort
     call s:tryexe('normal! ' .. cmd .. a:item[1])
 endfunction
 
+function s:grep_cb(efm, vim_cmd, choice) abort
+    const items = getqflist({'lines': [a:choice], 'efm': a:efm})->get('items', [])
+    if empty(items) || !items[0].bufnr
+        return s:error('fzy: no valid item selected')
+    endif
+    call setbufvar(items[0].bufnr, '&buflisted', 1)
+    const cmd = printf('%s %d | call cursor(%d, %d)', a:vim_cmd, items[0].bufnr, items[0].lnum, items[0].col)
+    call histadd('cmd', cmd)
+    call s:tryexe(cmd)
+endfunction
+
 " See issue: https://github.com/vim/vim/issues/3522
 function fzy#start(items, on_select_cb, ...) abort
     if empty(a:items)
@@ -279,6 +290,14 @@ function fzy#help(help_cmd, mods) abort
     const items = 'cut -f 1 ' .. findfile('doc/tags', &runtimepath, -1)->join()
     const stl = printf(':%s (helptags)', cmd)
     return fzy#start(items, funcref('s:open_tag_cb', [cmd]), s:opts(stl))
+endfunction
+
+function fzy#grep(edit_cmd, mods, args) abort
+    const cmd = empty(a:mods) ? a:edit_cmd : (a:mods .. ' ' .. a:edit_cmd)
+    const grep_cmd = get(g:, 'fzy', {})->get('grepcmd', &grepprg) .. ' ' .. a:args
+    const grep_efm = get(g:, 'fzy', {})->get('grepformat', &grepformat)
+    const stl = printf(':%s [%s]', cmd, grep_cmd)
+    return fzy#start(grep_cmd, funcref('s:grep_cb', [grep_efm, cmd]), s:opts(stl))
 endfunction
 
 function fzy#tags(tags_cmd, mods) abort

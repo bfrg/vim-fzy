@@ -3,7 +3,7 @@
 " File:         plugin/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Oct 13, 2020
+" Last Change:  Jul 15, 2021
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -17,6 +17,9 @@ set cpoptions&vim
 
 command -nargs=? -complete=dir FzyFind      call fzy#find(empty(<q-args>) ? getcwd() : <q-args>, 'edit', '')
 command -nargs=? -complete=dir FzyFindSplit call fzy#find(empty(<q-args>) ? getcwd() : <q-args>, 'split', <q-mods>)
+
+command -nargs=+ -complete=file FzyGrep      call fzy#grep('buffer', '', <q-args>)
+command -nargs=+ -complete=file FzyGrepSplit call fzy#grep('sbuffer', <q-mods>, <q-args>)
 
 command -bar -bang FzyBuffer      call fzy#buffers('buffer', <bang>0, '')
 command -bar -bang FzyBufferSplit call fzy#buffers('sbuffer', <bang>0, <q-mods>)
