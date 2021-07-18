@@ -3,7 +3,7 @@
 " File:         plugin/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Jul 15, 2021
+" Last Change:  Jul 19, 2021
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -11,9 +11,6 @@ if exists('g:loaded_fzy') || !has('patch-8.1.1828')
     finish
 endif
 let g:loaded_fzy = 1
-
-let s:save_cpo = &cpoptions
-set cpoptions&vim
 
 command -nargs=? -complete=dir FzyFind      call fzy#find(empty(<q-args>) ? getcwd() : <q-args>, 'edit', '')
 command -nargs=? -complete=dir FzyFindSplit call fzy#find(empty(<q-args>) ? getcwd() : <q-args>, 'split', <q-mods>)
@@ -40,6 +37,3 @@ command -bar FzyTjump      call fzy#tags('tjump', '')
 command -bar FzyTjumpSplit call fzy#tags('stjump', <q-mods>)
 
 command -bar FzyHelp call fzy#help('help', <q-mods>)
-
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
