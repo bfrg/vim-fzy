@@ -35,6 +35,11 @@ COMMANDS                                                        *fzy-commands*
             The grep-search command can be specified with |g:fzy.grepcmd|. The
             grep-output is parsed with |g:fzy.grepformat| (see below).
 
+            Note: special characters like % and # in {args} are expanded
+            before the grep command is invoked. To avoid that insert a
+            backslash before the character. See |cmdline-special| for more
+            details.
+
 :FzyBuffer[!]                                                     *:FzyBuffer*
             List buffers (same as |:ls|), edit the selected buffer in current
             window.
