@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Jul 15, 2021
+" Last Change:  Jul 20, 2021
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -113,7 +113,7 @@ function s:term_open(opts, ctx) abort
                 \ }, 'keep')
 
         " Stop terminal job when popup window is closed with mouse
-        call popup_create(bufnr, extend(a:opts.popup, {
+        call popup_create(bufnr, deepcopy(a:opts.popup)->extend({
                 \ 'minheight': a:opts.rows,
                 \ 'callback': {_,i -> i == -2 ? term_getjob(bufnr)->job_stop() : 0}
                 \ }))
@@ -130,7 +130,7 @@ function s:term_open(opts, ctx) abort
 endfunction
 
 function s:opts(title, space = 0) abort
-    let opts = get(g:, 'fzy', {})->copy()->extend({'statusline': a:title})
+    let opts = get(g:, 'fzy', {})->deepcopy()->extend({'statusline': a:title})
     call get(opts, 'popup', {})->extend({'title': a:space ? ' ' .. a:title : a:title})
     return opts
 endfunction
@@ -185,7 +185,7 @@ function fzy#start(items, on_select_cb, ...) abort
             \ 'popupwin': get(a:0 ? a:1 : {}, 'popupwin') && has('patch-8.2.0204') ? 1 : 0
             \ }
 
-    let opts = extend(a:0 ? copy(a:1) : {}, {
+    let opts = extend(a:0 ? deepcopy(a:1) : {}, {
             \ 'exe': exepath('fzy'),
             \ 'prompt': '> ',
             \ 'lines': 10,
@@ -296,7 +296,7 @@ function fzy#grep(edit_cmd, mods, args) abort
     const cmd = empty(a:mods) ? a:edit_cmd : (a:mods .. ' ' .. a:edit_cmd)
     const grep_cmd = get(g:, 'fzy', {})->get('grepcmd', &grepprg) .. ' ' .. a:args
     const grep_efm = get(g:, 'fzy', {})->get('grepformat', &grepformat)
-    const stl = printf(':%s [%s]', cmd, grep_cmd)
+    const stl = printf(':%s (%s)', cmd, grep_cmd)
     return fzy#start(grep_cmd, funcref('s:grep_cb', [grep_efm, cmd]), s:opts(stl))
 endfunction
 
