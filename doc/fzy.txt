@@ -123,7 +123,7 @@ following options are supported:
 
     prompt                                                      *g:fzy.prompt*
             Fzy input prompt. Equivalent to fzy's "--prompt" option.
-            Default: "▶ "
+            Default: "> "
 
     showinfo                                                  *g:fzy.showinfo*
             Show selection info line. Equivalent to fzy's "--show-info"
