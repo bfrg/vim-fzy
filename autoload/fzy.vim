@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Jul 20, 2021
+" Last Change:  Oct 6, 2021
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -245,13 +245,13 @@ function fzy#stop() abort
 endfunction
 
 function fzy#find(dir, vim_cmd, mods) abort
-    if !isdirectory(expand(a:dir))
-        return s:error('fzy-find: Directory "%s" does not exist', expand(a:dir))
+    if !isdirectory(expand(a:dir, v:true))
+        return s:error('fzy-find: Directory "%s" does not exist', expand(a:dir, v:true))
     endif
 
-    const path = expand(a:dir)->fnamemodify(':~')->simplify()
+    const path = expand(a:dir, v:true)->fnamemodify(':~')->simplify()
     const findcmd = printf('cd %s; %s',
-            \ expand(path)->shellescape(),
+            \ expand(path, v:true)->shellescape(),
             \ get(g:, 'fzy', {})->get('findcmd', join(s:findcmd))
             \ )
     const editcmd = empty(a:mods) ? a:vim_cmd : (a:mods .. ' ' .. a:vim_cmd)
