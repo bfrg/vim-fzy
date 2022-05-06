@@ -3,7 +3,7 @@
 " File:         autoload/fzy.vim
 " Author:       bfrg <https://github.com/bfrg>
 " Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  Oct 6, 2021
+" Last Change:  May 6, 2022
 " License:      Same as Vim itself (see :h license)
 " ==============================================================================
 
@@ -19,7 +19,7 @@ const s:findcmd =<< trim END
       -a -prune
       -o '(' -type f -o -type l ')'
       -a -print 2> /dev/null
-    | sed 's/^\.\///'
+    | cut -b3-
 END
 
 function s:error(...)

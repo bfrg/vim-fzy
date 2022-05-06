@@ -99,13 +99,13 @@ find
   -a -prune
   -o '(' -type f -o -type l ')'
   -a -print 2> /dev/null
-| sed 's/^\.\///'
+| cut -b3-
 ```
 
 Broken down the expression means:
 - Ignore all hidden files and directories, except for `.gitignore`, and `.vim`,
 - print only files and symlinks.
-- The `sed` command will remove the `./` prefix from all file paths.
+- The `cut` command will remove the leading `./` from all file paths.
 
 ### Example
 

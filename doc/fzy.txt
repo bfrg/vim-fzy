@@ -168,14 +168,14 @@ following options are supported:
                   -a -prune
                   -o '(' -type f -o -type l ')'
                   -a -print 2> /dev/null
-                | sed 's/^\.\///'
+                | cut -b3-
 <
             Broken down the expression means:
                 - ignore all files and directories starting with a dot,
                 - except for the current directory, .gitignore and .vim
                 - list only files and symlinks
-                - the sed(1) command will remove the "./" prefix from all file
-                  paths
+                - the cut(1) command will remove the leading "./" from all
+                  file paths
 
     grepcmd                                                    *g:fzy.grepcmd*
             Set the grep executable for the |:FzyGrep| and |:FzyGrepSplit|
