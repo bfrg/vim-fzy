@@ -238,10 +238,10 @@ function fzy#start(items, on_select_cb, ...) abort
 endfunction
 
 function fzy#stop() abort
-    if &buftype !=# 'terminal' || bufname('%') !=# 'fzy'
+    if &buftype !=# 'terminal' || bufname() !=# 'fzy'
         return s:error('fzy-E12: Not a fzy terminal window')
     endif
-    return bufnr('%')->term_getjob()->job_stop()
+    return bufnr()->term_getjob()->job_stop()
 endfunction
 
 function fzy#find(dir, vim_cmd, mods) abort
