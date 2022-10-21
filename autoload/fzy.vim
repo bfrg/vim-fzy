@@ -43,7 +43,7 @@ def Exit_cb(ctx: dict<any>, job: job, status: number)
     else
         const winnr: number = winnr()
         win_gotoid(ctx.winid)
-        execute $'{winnr}close'
+        execute $':{winnr}close'
         redraw
     endif
 
