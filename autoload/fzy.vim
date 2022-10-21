@@ -1,16 +1,14 @@
-" ==============================================================================
-" Run fzy asynchronously inside a Vim terminal-window
-" File:         autoload/fzy.vim
-" Author:       bfrg <https://github.com/bfrg>
-" Website:      https://github.com/bfrg/vim-fzy
-" Last Change:  May 6, 2022
-" License:      Same as Vim itself (see :h license)
-" ==============================================================================
+vim9script
+# ==============================================================================
+# Run fzy asynchronously inside a Vim terminal-window
+# File:         autoload/fzy.vim
+# Author:       bfrg <https://github.com/bfrg>
+# Website:      https://github.com/bfrg/vim-fzy
+# Last Change:  Oct 21, 2022
+# License:      Same as Vim itself (see :h license)
+# ==============================================================================
 
-let s:save_cpo = &cpoptions
-set cpoptions&vim
-
-const s:findcmd =<< trim END
+const findcmd: list<string> =<< trim END
     find
       -name '.*'
       -a '!' -name .
@@ -22,298 +20,283 @@ const s:findcmd =<< trim END
     | cut -b3-
 END
 
-function s:error(...)
-    echohl ErrorMsg | echomsg call('printf', a:000) | echohl None
-endfunction
+def Error(msg: string)
+    echohl ErrorMsg | echomsg msg | echohl None
+enddef
 
-function s:tryexe(cmd)
+def Tryexe(cmd: string)
     try
-        execute a:cmd
+        execute cmd
     catch
         echohl ErrorMsg
         echomsg matchstr(v:exception, '^Vim\%((\a\+)\)\=:\zs.*')
         echohl None
     endtry
-endfunction
+enddef
 
-function s:window_state(mode) abort
-    if a:mode == 0
-        let w:fzy_winview = winsaveview()
-    elseif a:mode == 1 && exists('w:fzy_winview')
-        call winrestview(w:fzy_winview)
-    elseif a:mode == 2 && exists('w:fzy_winview')
-        call winrestview(w:fzy_winview)
-        unlet w:fzy_winview
-    endif
-endfunction
-
-function s:windo(mode) abort
-    for winnr in range(1, winnr('$'))
-        call win_execute(win_getid(winnr), printf('call s:window_state(%d)', a:mode))
-    endfor
-endfunction
-
-function s:exit_cb(ctx, job, status) abort
-    " Redraw screen in case a prompt like :tselect shows up after selecting an
-    " item. If not redrawn, popup window remains visible
-    if a:ctx.popupwin
+def Exit_cb(ctx: dict<any>, job: job, status: number)
+    # Redraw screen in case a prompt like :tselect shows up after selecting an
+    # item. If not redrawn, popup window remains visible
+    if ctx.popupwin
         close
         redraw
     else
-        let winnr = winnr()
-        call win_gotoid(a:ctx.winid)
-        execute winnr .. 'close'
-        call s:windo(2)
-        " Must be called after s:windo(2) or screen flickers when fzy is closed
-        " with CTRL-C
+        const winnr: number = winnr()
+        win_gotoid(ctx.winid)
+        execute $'{winnr}close'
         redraw
     endif
 
-    if filereadable(a:ctx.selectfile)
+    if filereadable(ctx.selectfile)
         try
-            call a:ctx.on_select_cb(readfile(a:ctx.selectfile)[0])
+            ctx.on_select_cb(readfile(ctx.selectfile)[0])
         catch /^Vim\%((\a\+)\)\=:E684/
         endtry
     endif
 
-    call delete(a:ctx.selectfile)
-    if has_key(a:ctx, 'itemsfile')
-        call delete(a:ctx.itemsfile)
+    delete(ctx.selectfile)
+    if has_key(ctx, 'itemsfile')
+        delete(ctx.itemsfile)
     endif
-endfunction
+enddef
 
-function s:term_open(opts, ctx) abort
-    let cmd = [&shell, &shellcmdflag, a:opts.shellcmd]
+def Term_open(opts: dict<any>, ctx: dict<any>): number
+    const cmd: list<string> = [&shell, &shellcmdflag, opts.shellcmd]
 
-    let term_opts = {
-            \ 'norestore': 1,
-            \ 'exit_cb': funcref('s:exit_cb', [a:ctx]),
-            \ 'term_name': 'fzy',
-            \ 'term_rows': a:opts.rows
-            \ }
+    var term_opts: dict<any> = {
+        norestore: true,
+        exit_cb: funcref(Exit_cb, [ctx]),
+        term_name: 'fzy',
+        term_rows: opts.rows
+    }
 
-    if has_key(a:opts, 'term_highlight') && has('patch-8.2.0455')
-        call extend(term_opts, {'term_highlight': a:opts.term_highlight})
+    if has_key(opts, 'term_highlight')
+        extend(term_opts, {term_highlight: opts.term_highlight})
     endif
 
-    if a:ctx.popupwin
-        if !has_key(a:opts, 'term_highlight') && has('patch-8.2.0455')
-            call extend(term_opts, {'term_highlight': 'Pmenu'})
+    var bufnr: number
+    if ctx.popupwin
+        if !has_key(opts, 'term_highlight')
+            extend(term_opts, {term_highlight: 'Pmenu'})
         endif
 
-        let bufnr = term_start(cmd, extend(term_opts, {
-                \ 'hidden': 1,
-                \ 'term_finish': 'close'
-                \ }))
+        bufnr = term_start(cmd, extend(term_opts, {
+            hidden: true,
+            term_finish: 'close'
+        }))
 
-        call extend(a:opts.popup, {
-                \ 'minwidth': &columns > 80 ? 80 : &columns - 4,
-                \ 'padding': [0, 1, 0, 1],
-                \ 'border': []
-                \ }, 'keep')
+        extend(opts.popup, {
+            minwidth: &columns > 80 ? 80 : &columns - 4,
+            padding: [0, 1, 0, 1],
+            border: []
+        }, 'keep')
 
-        " Stop terminal job when popup window is closed with mouse
-        call popup_create(bufnr, deepcopy(a:opts.popup)->extend({
-                \ 'minheight': a:opts.rows,
-                \ 'callback': {_,i -> i == -2 ? term_getjob(bufnr)->job_stop() : 0}
-                \ }))
+        # Stop terminal job when popup window is closed with mouse
+        popup_create(bufnr, deepcopy(opts.popup)->extend({
+            minheight: opts.rows,
+            callback: (_, i) => i == -2 ? bufnr->term_getjob()->job_stop() : 0
+        }))
     else
-        call s:windo(0)
-        botright let bufnr = term_start(cmd, term_opts)
-        setlocal nonumber norelativenumber winfixheight bufhidden=wipe
-        let &l:statusline = a:opts.statusline
-        call s:windo(1)
+        botright bufnr = term_start(cmd, term_opts)
+        &l:number = false
+        &l:relativenumber = false
+        &l:winfixheight = true
+        &l:bufhidden = 'wipe'
+        &l:statusline = opts.statusline
     endif
 
-    call setbufvar(bufnr, '&filetype', 'fzy')
+    setbufvar(bufnr, '&filetype', 'fzy')
     return bufnr
-endfunction
+enddef
 
-function s:opts(title, space = 0) abort
-    let opts = get(g:, 'fzy', {})->deepcopy()->extend({'statusline': a:title})
-    call get(opts, 'popup', {})->extend({'title': a:space ? ' ' .. a:title : a:title})
+def Opts(title: string, space: bool = false): dict<any>
+    var opts: dict<any> = get(g:, 'fzy', {})->deepcopy()->extend({statusline: title})
+    get(opts, 'popup', {})->extend({title: space ? ' ' .. title : title})
     return opts
-endfunction
+enddef
 
-function s:find_cb(dir, vim_cmd, choice) abort
-    let fpath = fnamemodify(a:dir, ':p:s?/$??') .. '/' .. a:choice
-    let fpath = resolve(fpath)->fnamemodify(':.')->fnameescape()
-    call histadd('cmd', a:vim_cmd .. ' ' .. fpath)
-    call s:tryexe(a:vim_cmd .. ' ' .. fpath)
-endfunction
+def Find_cb(dir: string, vim_cmd: string, choice: string)
+    var fpath: string = fnamemodify(dir, ':p:s?/$??') .. '/' .. choice
+    fpath = fpath->resolve()->fnamemodify(':.')->fnameescape()
+    histadd('cmd', $'{vim_cmd} {fpath}')
+    Tryexe($'{vim_cmd} {fpath}')
+enddef
 
-function s:open_file_cb(vim_cmd, choice) abort
-    const fname = fnameescape(a:choice)
-    call histadd('cmd', a:vim_cmd .. ' ' .. fname)
-    call s:tryexe(a:vim_cmd .. ' ' .. fname)
-endfunction
+def Open_file_cb(vim_cmd: string, choice: string)
+    const fname: string = fnameescape(choice)
+    histadd('cmd', $'{vim_cmd} {fname}')
+    Tryexe($'{vim_cmd} {fname}')
+enddef
 
-function s:open_tag_cb(vim_cmd, choice) abort
-    call histadd('cmd', a:vim_cmd .. ' ' .. a:choice)
-    call s:tryexe(a:vim_cmd .. ' ' .. escape(a:choice, '"'))
-endfunction
+def Open_tag_cb(vim_cmd: string, choice: string)
+    histadd('cmd', vim_cmd .. ' ' .. choice)
+    Tryexe(vim_cmd .. ' ' .. escape(choice, '"'))
+enddef
 
-function s:marks_cb(split_cmd, bang, item) abort
-    if !empty(a:split_cmd)
-        execute a:split_cmd
+def Marks_cb(split_cmd: string, bang: bool, item: string)
+    if !empty(split_cmd)
+        execute split_cmd
     endif
-    const cmd = a:bang ? "g`" : "`"
-    call s:tryexe('normal! ' .. cmd .. a:item[1])
-endfunction
+    const cmd: string = bang ? "g`" : "`"
+    Tryexe($'normal! {cmd}{item[1]}')
+enddef
 
-function s:grep_cb(efm, vim_cmd, choice) abort
-    const items = getqflist({'lines': [a:choice], 'efm': a:efm})->get('items', [])
+def Grep_cb(efm: string, vim_cmd: string, choice: string)
+    const items: list<any> = getqflist({lines: [choice], efm: efm})->get('items', [])
     if empty(items) || !items[0].bufnr
-        return s:error('fzy: no valid item selected')
+        Error('fzy: no valid item selected')
+        return
     endif
-    call setbufvar(items[0].bufnr, '&buflisted', 1)
-    const cmd = printf('%s %d | call cursor(%d, %d)', a:vim_cmd, items[0].bufnr, items[0].lnum, items[0].col)
-    call histadd('cmd', cmd)
-    call s:tryexe(cmd)
-endfunction
+    setbufvar(items[0].bufnr, '&buflisted', 1)
+    const cmd: string = $'{vim_cmd} {items[0].bufnr} | call cursor({items[0].lnum}, {items[0].col})'
+    histadd('cmd', cmd)
+    Tryexe(cmd)
+enddef
 
-" See issue: https://github.com/vim/vim/issues/3522
-function fzy#start(items, on_select_cb, ...) abort
-    if empty(a:items)
-        return s:error('fzy-E10: No items passed')
+export def Start(items: any, On_select_cb: func, options: dict<any> = {}): number
+    if empty(items)
+        Error('fzy-E10: No items passed')
+        return 0
     endif
 
-    let ctx = {
-            \ 'winid': win_getid(),
-            \ 'selectfile': tempname(),
-            \ 'on_select_cb': a:on_select_cb,
-            \ 'popupwin': get(a:0 ? a:1 : {}, 'popupwin') && has('patch-8.2.0204') ? 1 : 0
-            \ }
+    var ctx: dict<any> = {
+        winid: win_getid(),
+        selectfile: tempname(),
+        on_select_cb: On_select_cb,
+        popupwin: get(options, 'popupwin') ? true : false
+    }
 
-    let opts = extend(a:0 ? deepcopy(a:1) : {}, {
-            \ 'exe': exepath('fzy'),
-            \ 'prompt': '> ',
-            \ 'lines': 10,
-            \ 'showinfo': 0,
-            \ 'popup': {},
-            \ 'statusline': 'fzy-term'
-            \ }, 'keep')
+    var opts: dict<any> = options->deepcopy()->extend({
+        exe: exepath('fzy'),
+        prompt: '> ',
+        lines: 10,
+        showinfo: 0,
+        popup: {},
+        statusline: 'fzy-term'
+    }, 'keep')
 
     if !executable(opts.exe)
-        return s:error('fzy: executable "%s" not found', opts.exe)
+        Error($'fzy: executable "{opts.exe}" not found')
+        return 0
     endif
 
-    let lines = opts.lines < 3 ? 3 : opts.lines
-    let opts.rows = opts.showinfo ? lines + 2 : lines + 1
+    var lines: number = opts.lines < 3 ? 3 : opts.lines
+    opts.rows = opts.showinfo ? lines + 2 : lines + 1
 
-    const fzycmd = printf('%s --lines=%d --prompt=%s %s > %s',
-            \ opts.exe,
-            \ lines,
-            \ shellescape(opts.prompt),
-            \ opts.showinfo ? '--show-info' : '',
-            \ ctx.selectfile
-            \ )
+    const fzycmd: string = printf('%s --lines=%d --prompt=%s %s > %s',
+        opts.exe,
+        lines,
+        shellescape(opts.prompt),
+        opts.showinfo ? '--show-info' : '',
+        ctx.selectfile
+    )
 
-    if type(a:items) ==  v:t_list
-        let ctx.itemsfile = tempname()
+    var fzybuf: number
+    if type(items) ==  v:t_list
+        ctx.itemsfile = tempname()
 
-        " Automatically resize terminal window
-        if len(a:items) < lines
-            let lines = len(a:items) < 3 ? 3 : len(a:items)
-            let opts.rows = get(opts, 'showinfo') ? lines + 2 : lines + 1
+        # Automatically resize terminal window
+        if len(items) < lines
+            lines = len(items) < 3 ? 3 : len(items)
+            opts.rows = get(opts, 'showinfo') ? lines + 2 : lines + 1
         endif
 
-        let opts.shellcmd = fzycmd .. ' < ' .. ctx.itemsfile
+        opts.shellcmd = $'{fzycmd} < {ctx.itemsfile}'
         if executable('mkfifo')
-            call system('mkfifo ' .. ctx.itemsfile)
-            let fzybuf = s:term_open(opts, ctx)
-            call writefile(a:items, ctx.itemsfile)
+            system($'mkfifo {ctx.itemsfile}')
+            fzybuf = Term_open(opts, ctx)
+            writefile(items, ctx.itemsfile)
         else
-            call writefile(a:items, ctx.itemsfile)
-            let fzybuf = s:term_open(opts, ctx)
+            writefile(items, ctx.itemsfile)
+            fzybuf = Term_open(opts, ctx)
         endif
-    elseif type(a:items) == v:t_string
-        let opts.shellcmd = a:items .. ' | ' .. fzycmd
-        let fzybuf = s:term_open(opts, ctx)
+    elseif type(items) == v:t_string
+        opts.shellcmd = $'{items} | {fzycmd}'
+        fzybuf = Term_open(opts, ctx)
     else
-        return s:error('fzy-E11: Only list and string supported')
+        Error('fzy-E11: Only list and string supported')
+        return 0
     endif
 
     return fzybuf
-endfunction
+enddef
 
-function fzy#stop() abort
-    if &buftype !=# 'terminal' || bufname() !=# 'fzy'
-        return s:error('fzy-E12: Not a fzy terminal window')
+export def Stop()
+    if &buftype != 'terminal' || bufname() != 'fzy'
+        Error('fzy-E12: Not a fzy terminal window')
+        return
     endif
-    return bufnr()->term_getjob()->job_stop()
-endfunction
+    bufnr()->term_getjob()->job_stop()
+enddef
 
-function fzy#find(dir, vim_cmd, mods) abort
-    if !isdirectory(expand(a:dir, v:true))
-        return s:error('fzy-find: Directory "%s" does not exist', expand(a:dir, v:true))
+export def Find(dir: string, vim_cmd: string, mods: string)
+    if !isdirectory(expand(dir, true))
+        Error($'fzy-find: Directory "{expand(dir, true)}" does not exist')
+        return
     endif
 
-    const path = expand(a:dir, v:true)->fnamemodify(':~')->simplify()
-    const findcmd = printf('cd %s; %s',
-            \ expand(path, v:true)->shellescape(),
-            \ get(g:, 'fzy', {})->get('findcmd', join(s:findcmd))
-            \ )
-    const editcmd = empty(a:mods) ? a:vim_cmd : (a:mods .. ' ' .. a:vim_cmd)
-    const stl = printf(':%s [directory: %s]', editcmd, path)
-    return fzy#start(findcmd, funcref('s:find_cb', [path, editcmd]), s:opts(stl))
-endfunction
+    const path: string = dir->expand(true)->fnamemodify(':~')->simplify()
+    const cmd: string = printf('cd %s; %s',
+        expand(path, true)->shellescape(),
+        get(g:, 'fzy', {})->get('findcmd', join(findcmd))
+    )
+    const editcmd: string = empty(mods) ? vim_cmd : (mods .. ' ' .. vim_cmd)
+    const stl: string = $':{editcmd} [directory: {path}]'
+    Start(cmd, funcref(Find_cb, [path, editcmd]), Opts(stl))
+enddef
 
-function fzy#buffers(edit_cmd, bang, mods) abort
-    const cmd = empty(a:mods) ? a:edit_cmd : (a:mods .. ' ' .. a:edit_cmd)
-    const items = range(1, bufnr('$'))
-            \ ->filter(a:bang ? 'bufexists(v:val)' : 'buflisted(v:val)')
-            \ ->map('empty(bufname(v:val)) ? v:val : fnamemodify(bufname(v:val), ":~:.")')
-    const stl = printf(':%s (%s buffers)', cmd, a:bang ? 'all' : 'listed')
-    return fzy#start(items, funcref('s:open_file_cb', [cmd]), s:opts(stl))
-endfunction
+export def Buffers(edit_cmd: string, bang: bool, mods: string)
+    const cmd: string = empty(mods) ? edit_cmd : (mods .. ' ' .. edit_cmd)
+    const items: list<any> = range(1, bufnr('$'))
+        ->filter(bang ? (_, i: number): bool => bufexists(i) : (_, i: number): bool => buflisted(i))
+        ->mapnew((_, i: number): any => i->bufname()->empty() ? i : i->bufname()->fnamemodify(':~:.'))
+    const stl: string = printf(':%s (%s buffers)', cmd, bang ? 'all' : 'listed')
+    Start(items, funcref(Open_file_cb, [cmd]), Opts(stl))
+enddef
 
-function fzy#oldfiles(edit_cmd, mods) abort
-    const cmd = empty(a:mods) ? a:edit_cmd : (a:mods .. ' ' .. a:edit_cmd)
-    const items = copy(v:oldfiles)
-            \ ->filter("fnamemodify(v:val, ':p')->filereadable()")
-            \ ->map("fnamemodify(v:val, ':~:.')")
-    const stl = printf(':%s (oldfiles)', cmd)
-    return fzy#start(items, funcref('s:open_file_cb', [cmd]), s:opts(stl))
-endfunction
+export def Oldfiles(edit_cmd: string, mods: string)
+    const cmd: string = empty(mods) ? edit_cmd : (mods .. ' ' .. edit_cmd)
+    const items: list<string> = v:oldfiles
+        ->copy()
+        ->filter((_, i: string): bool => i->fnamemodify(':p')->filereadable())
+        ->map((_, i: string): string => fnamemodify(i, ':~:.'))
+    const stl: string = $':{cmd} (oldfiles)'
+    Start(items, funcref(Open_file_cb, [cmd]), Opts(stl))
+enddef
 
-function fzy#arg(edit_cmd, local, mods) abort
-    const items = a:local ? argv() : argv(-1, -1)
-    const str = a:local ? 'local arglist' : 'global arglist'
-    const cmd = empty(a:mods) ? a:edit_cmd : (a:mods .. ' ' .. a:edit_cmd)
-    const stl = printf(':%s (%s)', cmd, str)
-    return fzy#start(items, funcref('s:open_file_cb', [cmd]), s:opts(stl))
-endfunction
+export def Arg(edit_cmd: string, local: bool, mods: string)
+    const items: list<string> = local ? argv() : argv(-1, -1)
+    const str: string = local ? 'local arglist' : 'global arglist'
+    const cmd: string = empty(mods) ? edit_cmd : (mods .. ' ' .. edit_cmd)
+    Start(items, funcref(Open_file_cb, [cmd]), Opts($':{cmd} ({str})'))
+enddef
 
-function fzy#help(help_cmd, mods) abort
-    const cmd = empty(a:mods) ? a:help_cmd : (a:mods .. ' ' .. a:help_cmd)
-    const items = 'cut -f 1 ' .. findfile('doc/tags', &runtimepath, -1)->join()
-    const stl = printf(':%s (helptags)', cmd)
-    return fzy#start(items, funcref('s:open_tag_cb', [cmd]), s:opts(stl))
-endfunction
+export def Help(help_cmd: string, mods: string)
+    const cmd: string = empty(mods) ? help_cmd : (mods .. ' ' .. help_cmd)
+    const items: string = 'cut -f 1 ' .. findfile('doc/tags', &runtimepath, -1)->join()
+    const stl: string = $':{cmd} (helptags)'
+    Start(items, funcref(Open_tag_cb, [cmd]), Opts(stl))
+enddef
 
-function fzy#grep(edit_cmd, mods, args) abort
-    const cmd = empty(a:mods) ? a:edit_cmd : (a:mods .. ' ' .. a:edit_cmd)
-    const grep_cmd = get(g:, 'fzy', {})->get('grepcmd', &grepprg) .. ' ' .. a:args
-    const grep_efm = get(g:, 'fzy', {})->get('grepformat', &grepformat)
-    const stl = printf(':%s (%s)', cmd, grep_cmd)
-    return fzy#start(grep_cmd, funcref('s:grep_cb', [grep_efm, cmd]), s:opts(stl))
-endfunction
+export def Grep(edit_cmd: string, mods: string, args: string)
+    const cmd: string = empty(mods) ? edit_cmd : (mods .. ' ' .. edit_cmd)
+    const grep_cmd: string = get(g:, 'fzy', {})->get('grepcmd', &grepprg) .. ' ' .. args
+    const grep_efm: string = get(g:, 'fzy', {})->get('grepformat', &grepformat)
+    const stl: string = $':{cmd} ({grep_cmd})'
+    Start(grep_cmd, funcref(Grep_cb, [grep_efm, cmd]), Opts(stl))
+enddef
 
-function fzy#tags(tags_cmd, mods) abort
-    const cmd = empty(a:mods) ? a:tags_cmd : (a:mods .. ' ' .. a:tags_cmd)
-    const items = executable('sed') && executable('cut') && executable('sort') && executable('uniq')
-            \ ? printf("sed '/^!_TAG_/ d' %s | cut -f 1 | sort | uniq", tagfiles()->join())
-            \ : taglist('.*')->map('v:val.name')->sort()->uniq()
-    const stl = printf(':%s [%s]', cmd, tagfiles()->map('fnamemodify(v:val, ":~:.")')->join(', '))
-    return fzy#start(items, funcref('s:open_tag_cb', [cmd]), s:opts(stl))
-endfunction
+export def Tags(tags_cmd: string, mods: string): string
+    const cmd: string = empty(mods) ? tags_cmd : (mods .. ' ' .. tags_cmd)
+    const items: any = executable('sed') && executable('cut') && executable('sort') && executable('uniq')
+        ? printf("sed '/^!_TAG_/ d' %s | cut -f 1 | sort | uniq", tagfiles()->join())
+        : taglist('.*')->mapnew((_, i: dict<any>): string => i.name)->sort()->uniq()
+    const stl: string = printf(':%s [%s]', cmd, tagfiles()->map((_, i: string): string => fnamemodify(i, ':~:.'))->join(', '))
+    Start(items, funcref(Open_tag_cb, [cmd]), Opts(stl))
+enddef
 
-function fzy#marks(bang, ...) abort
-    const cmd = a:0 ? a:1 .. ' split' : ''
-    const output = execute('marks')->split('\n')
-    return fzy#start(output[1:], funcref('s:marks_cb', [cmd, a:bang]), s:opts(output[0], 1))
-endfunction
-
-let &cpoptions = s:save_cpo
-unlet s:save_cpo
+export def Marks(bang: bool, ...args: list<string>)
+    const cmd: string = !empty(args) ? args[0] .. ' split' : ''
+    const output: list<string> = execute('marks')->split('\n')
+    Start(output[1 :], funcref(Marks_cb, [cmd, bang]), Opts(output[0], true))
+enddef
