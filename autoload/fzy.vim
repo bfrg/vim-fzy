@@ -286,7 +286,7 @@ export def Grep(edit_cmd: string, mods: string, args: string)
     Start(grep_cmd, funcref(Grep_cb, [grep_efm, cmd]), Opts(stl))
 enddef
 
-export def Tags(tags_cmd: string, mods: string): string
+export def Tags(tags_cmd: string, mods: string)
     const cmd: string = empty(mods) ? tags_cmd : (mods .. ' ' .. tags_cmd)
     const items: any = executable('sed') && executable('cut') && executable('sort') && executable('uniq')
         ? printf("sed '/^!_TAG_/ d' %s | cut -f 1 | sort | uniq", tagfiles()->join())
