@@ -24,6 +24,12 @@ def Error(msg: string)
     echohl ErrorMsg | echomsg msg | echohl None
 enddef
 
+def Update_cmd_history(cmd: string)
+    if get(get(g:, 'fzy', {}), 'histadd', false)
+        histadd('cmd', cmd)
+    endif
+enddef
+
 def Tryexe(cmd: string)
     try
         execute cmd
@@ -118,18 +124,18 @@ enddef
 def Find_cb(dir: string, vim_cmd: string, choice: string)
     var fpath: string = fnamemodify(dir, ':p:s?/$??') .. '/' .. choice
     fpath = fpath->resolve()->fnamemodify(':.')->fnameescape()
-    histadd('cmd', $'{vim_cmd} {fpath}')
+    Update_cmd_history($'{vim_cmd} {fpath}')
     Tryexe($'{vim_cmd} {fpath}')
 enddef
 
 def Open_file_cb(vim_cmd: string, choice: string)
     const fname: string = fnameescape(choice)
-    histadd('cmd', $'{vim_cmd} {fname}')
+    Update_cmd_history($'{vim_cmd} {fname}')
     Tryexe($'{vim_cmd} {fname}')
 enddef
 
 def Open_tag_cb(vim_cmd: string, choice: string)
-    histadd('cmd', vim_cmd .. ' ' .. choice)
+    Update_cmd_history(vim_cmd .. ' ' .. choice)
     Tryexe(vim_cmd .. ' ' .. escape(choice, '"'))
 enddef
 
@@ -149,7 +155,7 @@ def Grep_cb(efm: string, vim_cmd: string, choice: string)
     endif
     setbufvar(items[0].bufnr, '&buflisted', 1)
     const cmd: string = $'{vim_cmd} {items[0].bufnr} | call cursor({items[0].lnum}, {items[0].col})'
-    histadd('cmd', cmd)
+    Update_cmd_history(cmd)
     Tryexe(cmd)
 enddef
 
@@ -172,6 +178,7 @@ export def Start(items: any, On_select_cb: func, options: dict<any> = {}): numbe
         lines: 10,
         showinfo: 0,
         popup: {},
+        histadd: false,
         statusline: 'fzy-term'
     }, 'keep')
 
