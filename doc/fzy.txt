@@ -200,6 +200,10 @@ following options are supported:
 <
             If not specified, defaults to 'grepformat'.
 
+    histadd                                                    *g:fzy.histadd*
+            Add the Ex command to Vim's command-line history.
+            Default: |v:false|
+
 ==============================================================================
 CONFIGURATION EXAMPLES                                   *fzy-config-examples*
 

@@ -55,16 +55,18 @@ list of supported command modifiers, see `:help fzy-commands-split`.
 Options can be passed to fzy through the dictionary `g:fzy`. The following
 entries are supported:
 
-| Entry            | Description                                              | Default                            |
-| `prompt`         | Set the fzy input prompt.                                | `'▶ '`                             |
-| `showinfo`       | If true, fzy is invoked with the `--show-info` option.   | `v:false`                          |
-| `term_highlight` | Highlight group for the terminal window.                 | `'Terminal'`                       |
-| `popupwin`       | Display fzy in a popup terminal.                         | `v:false`                          |
-| `popup`          | Popup window options (dictionary).                       | [see below](#popup-window-options) |
-| `findcmd`        | File-search command (string).                            | [see below](#find-command)         |
-| `grepcmd`        | Grep-search command.                                     | `&grepprg`                         |
-| `grepformat`     | Format string for parsing the selected grep-output line. | `&grepformat`                      |
-| `histadd`        | If true, add edit command to history.                    | `v:false`                          |
+| Entry            | Description                                                                  | Default                            |
+| ---------------- | ---------------------------------------------------------------------------- | ---------------------------------- |
+| `lines`          | Specify how many lines of results to show. This sets fzy's `--lines` option. | `10`                               |
+| `prompt`         | Set the fzy input prompt.                                                    | `'▶ '`                             |
+| `showinfo`       | If true, fzy is invoked with the `--show-info` option.                       | `v:false`                          |
+| `term_highlight` | Highlight group for the terminal window.                                     | `'Terminal'`                       |
+| `popupwin`       | Display fzy in a popup terminal.                                             | `v:false`                          |
+| `popup`          | Popup window options (dictionary).                                           | [see below](#popup-window-options) |
+| `findcmd`        | File-search command (string).                                                | [see below](#find-command)         |
+| `grepcmd`        | Grep-search command.                                                         | `&grepprg`                         |
+| `grepformat`     | Format string for parsing the selected grep-output line.                     | `&grepformat`                      |
+| `histadd`        | If true, add edit command to history.                                        | `v:false`                          |
 
 When `popupwin` is set to `v:false`, the terminal window is opened at the bottom
 of the screen and will occupy the full width of the Vim window.
