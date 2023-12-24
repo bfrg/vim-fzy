@@ -4,14 +4,9 @@ vim9script
 # File:         plugin/fzy.vim
 # Author:       bfrg <https://github.com/bfrg>
 # Website:      https://github.com/bfrg/vim-fzy
-# Last Change:  Oct 21, 2022
+# Last Change:  Dec 24, 2023
 # License:      Same as Vim itself (see :h license)
 # ==============================================================================
-
-if exists('g:loaded_fzy')
-    finish
-endif
-g:loaded_fzy = 1
 
 import autoload '../autoload/fzy.vim'
 
